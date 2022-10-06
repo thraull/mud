@@ -450,6 +450,59 @@ Can only be called by addresses with write access to this component.</p>
 </tr>
 </tbody></table>
 
+<a href="#_set" id="_set" style="color: inherit; text-decoration: none;">
+  <h3>_set</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">_set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">internal</span>
+</code></pre>
+<p>Set the given component value for the given entity.
+Registers the update in the World contract.
+Can only be called internally (by the component or contracts deriving from it),
+without requiring explicit write access.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entity</td>
+<td>uint256</td>
+<td>Entity to set the value for.</td>
+</tr>
+<tr>
+<td>value</td>
+<td>bytes</td>
+<td>Value to set for the given entity.</td>
+</tr>
+</tbody></table>
+
+<a href="#_remove" id="_remove" style="color: inherit; text-decoration: none;">
+  <h3>_remove</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">_remove</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">internal</span>
+</code></pre>
+<p>Remove the given entity from this component.
+Registers the update in the World contract.
+Can only be called internally (by the component or contracts deriving from it),
+without requiring explicit write access.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entity</td>
+<td>uint256</td>
+<td>Entity to remove from this component.</td>
+</tr>
+</tbody></table>
+
 <a href="#indexer" id="indexer" style="color: inherit; text-decoration: none;">
   <h2>Indexer</h2>
 </a>
@@ -557,7 +610,7 @@ Can only be called by addresses with write access to this component.</p>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">has</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#_set" id="_set" style="color: inherit; text-decoration: none;">
+<a href="#_set-1" id="_set-1" style="color: inherit; text-decoration: none;">
   <h3>_set</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">_set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">newValues</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">internal</span>
