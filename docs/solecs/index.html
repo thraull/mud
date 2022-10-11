@@ -144,8 +144,8 @@ The <code>component</code> must be a <code>Uint256Component</code> (a component 
   <h1>Solidity API</h1>
 </a>
 
-<a href="#component" id="component" style="color: inherit; text-decoration: none;">
-  <h2>Component</h2>
+<a href="#barecomponent" id="barecomponent" style="color: inherit; text-decoration: none;">
+  <h2>BareComponent</h2>
 </a>
 <p>Components are a key-value store from entity id to component value.
 They are registered in the World and register updates to their state in the World.
@@ -174,33 +174,12 @@ Everyone has read access.</p>
 </code></pre>
 <p>Addresses with write access to this component</p>
 
-<a href="#entities-1" id="entities-1" style="color: inherit; text-decoration: none;">
-  <h3>entities</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-1">contract Set entities</span>
-</code></pre>
-<p>Set of entities with values in this component</p>
-
 <a href="#entitytovalue" id="entitytovalue" style="color: inherit; text-decoration: none;">
   <h3>entityToValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">mapping</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-0">=&gt;</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-2">)</span><span class="hl-1"> entityToValue</span>
 </code></pre>
 <p>Mapping from entity id to value in this component</p>
-
-<a href="#valuetoentities" id="valuetoentities" style="color: inherit; text-decoration: none;">
-  <h3>valueToEntities</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-1">contract MapSet valueToEntities</span>
-</code></pre>
-<p>Reverse mapping from value to set of entities</p>
-
-<a href="#indexers" id="indexers" style="color: inherit; text-decoration: none;">
-  <h3>indexers</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-1">contract IEntityIndexer</span><span class="hl-2">[]</span><span class="hl-1"> indexers</span>
-</code></pre>
-<p>List of indexers to be updated when a component value changes</p>
 
 <a href="#id" id="id" style="color: inherit; text-decoration: none;">
   <h3>id</h3>
@@ -298,6 +277,28 @@ Can only be called by the owner of this component.</p>
 <td>writer</td>
 <td>address</td>
 <td>Address to grant write access to.</td>
+</tr>
+</tbody></table>
+
+<a href="#unauthorizewriter" id="unauthorizewriter" style="color: inherit; text-decoration: none;">
+  <h3>unauthorizeWriter</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">unauthorizeWriter</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">writer</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+</code></pre>
+<p>Revoke write access to this component to the given address.
+Can only be called by the owner of this component.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>writer</td>
+<td>address</td>
+<td>Address to revoke write access .</td>
 </tr>
 </tbody></table>
 
@@ -404,51 +405,20 @@ Can only be called by addresses with write access to this component.</p>
 <a href="#getentities" id="getentities" style="color: inherit; text-decoration: none;">
   <h3>getEntities</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntities</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntities</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">pure</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
-<p>Get a list of all entities that have a value in this component.</p>
 
 <a href="#getentitieswithvalue" id="getentitieswithvalue" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">pure</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
-<p>Get a list of all entities that have the specified value in this component.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>value</td>
-<td>bytes</td>
-<td>Abi-encoded value to get the list of entities with this value for.</td>
-</tr>
-</tbody></table>
 
 <a href="#registerindexer" id="registerindexer" style="color: inherit; text-decoration: none;">
   <h3>registerIndexer</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">registerIndexer</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">indexer</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">registerIndexer</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">pure</span>
 </code></pre>
-<p>Register a new indexer that gets notified when a component value is set.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>indexer</td>
-<td>address</td>
-<td>Address of the indexer to notify when a component value is set.</td>
-</tr>
-</tbody></table>
 
 <a href="#_set" id="_set" style="color: inherit; text-decoration: none;">
   <h3>_set</h3>
@@ -503,6 +473,387 @@ without requiring explicit write access.</p>
 </tr>
 </tbody></table>
 
+<a href="#component" id="component" style="color: inherit; text-decoration: none;">
+  <h2>Component</h2>
+</a>
+<p>Components are a key-value store from entity id to component value.
+They are registered in the World and register updates to their state in the World.
+They have an owner, who can grant write access to more addresses.
+(Systems that want to write to a component need to be given write access first.)
+Everyone has read access.</p>
+
+<a href="#world-2" id="world-2" style="color: inherit; text-decoration: none;">
+  <h3>world</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-4">address</span><span class="hl-1"> world</span>
+</code></pre>
+<p>Reference to the World contract this component is registered in</p>
+
+<a href="#_owner-1" id="_owner-1" style="color: inherit; text-decoration: none;">
+  <h3>_owner</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-4">address</span><span class="hl-1"> _owner</span>
+</code></pre>
+<p>Owner of the component has write access and can given write access to other addresses</p>
+
+<a href="#writeaccess-1" id="writeaccess-1" style="color: inherit; text-decoration: none;">
+  <h3>writeAccess</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">mapping</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-0">=&gt;</span><span class="hl-1"> </span><span class="hl-4">bool</span><span class="hl-2">)</span><span class="hl-1"> writeAccess</span>
+</code></pre>
+<p>Addresses with write access to this component</p>
+
+<a href="#entities-1" id="entities-1" style="color: inherit; text-decoration: none;">
+  <h3>entities</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-1">contract Set entities</span>
+</code></pre>
+<p>Set of entities with values in this component</p>
+
+<a href="#entitytovalue-1" id="entitytovalue-1" style="color: inherit; text-decoration: none;">
+  <h3>entityToValue</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">mapping</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-0">=&gt;</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-2">)</span><span class="hl-1"> entityToValue</span>
+</code></pre>
+<p>Mapping from entity id to value in this component</p>
+
+<a href="#valuetoentities" id="valuetoentities" style="color: inherit; text-decoration: none;">
+  <h3>valueToEntities</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-1">contract MapSet valueToEntities</span>
+</code></pre>
+<p>Reverse mapping from value to set of entities</p>
+
+<a href="#indexers" id="indexers" style="color: inherit; text-decoration: none;">
+  <h3>indexers</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-1">contract IEntityIndexer</span><span class="hl-2">[]</span><span class="hl-1"> indexers</span>
+</code></pre>
+<p>List of indexers to be updated when a component value changes</p>
+
+<a href="#id-1" id="id-1" style="color: inherit; text-decoration: none;">
+  <h3>id</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-4">uint256</span><span class="hl-1"> id</span>
+</code></pre>
+<p>Public identifier of this component</p>
+
+<a href="#constructor-1" id="constructor-1" style="color: inherit; text-decoration: none;">
+  <h3>constructor</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">constructor</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">_world</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">_id</span><span class="hl-1">) </span><span class="hl-0">internal</span>
+</code></pre>
+
+<a href="#onlyowner-1" id="onlyowner-1" style="color: inherit; text-decoration: none;">
+  <h3>onlyOwner</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">modifier</span><span class="hl-1"> </span><span class="hl-3">onlyOwner</span><span class="hl-2">(</span><span class="hl-1">)</span>
+</code></pre>
+<p>Revert if caller is not the owner of this component</p>
+
+<a href="#onlywriter-1" id="onlywriter-1" style="color: inherit; text-decoration: none;">
+  <h3>onlyWriter</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">modifier</span><span class="hl-1"> </span><span class="hl-3">onlyWriter</span><span class="hl-2">(</span><span class="hl-1">)</span>
+</code></pre>
+<p>Revert if caller does not have write access to this component</p>
+
+<a href="#owner-1" id="owner-1" style="color: inherit; text-decoration: none;">
+  <h3>owner</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">owner</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-2">)</span>
+</code></pre>
+<p>Get the owner of this component</p>
+
+<a href="#transferownership-1" id="transferownership-1" style="color: inherit; text-decoration: none;">
+  <h3>transferOwnership</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">transferOwnership</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">newOwner</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+</code></pre>
+<p>Transfer ownership of this component to a new owner.
+Can only be called by the current owner.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>newOwner</td>
+<td>address</td>
+<td>Address of the new owner.</td>
+</tr>
+</tbody></table>
+
+<a href="#registerworld-1" id="registerworld-1" style="color: inherit; text-decoration: none;">
+  <h3>registerWorld</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">registerWorld</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">_world</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+</code></pre>
+<p>Register this component in the given world.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>_world</td>
+<td>address</td>
+<td>Address of the World contract.</td>
+</tr>
+</tbody></table>
+
+<a href="#authorizewriter-1" id="authorizewriter-1" style="color: inherit; text-decoration: none;">
+  <h3>authorizeWriter</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">authorizeWriter</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">writer</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+</code></pre>
+<p>Grant write access to this component to the given address.
+Can only be called by the owner of this component.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>writer</td>
+<td>address</td>
+<td>Address to grant write access to.</td>
+</tr>
+</tbody></table>
+
+<a href="#unauthorizewriter-1" id="unauthorizewriter-1" style="color: inherit; text-decoration: none;">
+  <h3>unauthorizeWriter</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">unauthorizeWriter</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">writer</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+</code></pre>
+<p>Revoke write access to this component to the given address.
+Can only be called by the owner of this component.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>writer</td>
+<td>address</td>
+<td>Address to revoke write access .</td>
+</tr>
+</tbody></table>
+
+<a href="#getschema-1" id="getschema-1" style="color: inherit; text-decoration: none;">
+  <h3>getSchema</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getSchema</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">pure</span><span class="hl-1"> </span><span class="hl-0">virtual</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">string</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">keys</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-5">enum</span><span class="hl-1"> </span><span class="hl-0">LibTypes</span><span class="hl-1">.SchemaValue</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">values</span><span class="hl-2">)</span>
+</code></pre>
+<p>Return the keys and value types of the schema of this component.</p>
+
+<a href="#set-1" id="set-1" style="color: inherit; text-decoration: none;">
+  <h3>set</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+</code></pre>
+<p>Set the given component value for the given entity.
+Registers the update in the World contract.
+Can only be called by addresses with write access to this component.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entity</td>
+<td>uint256</td>
+<td>Entity to set the value for.</td>
+</tr>
+<tr>
+<td>value</td>
+<td>bytes</td>
+<td>Value to set for the given entity.</td>
+</tr>
+</tbody></table>
+
+<a href="#remove-1" id="remove-1" style="color: inherit; text-decoration: none;">
+  <h3>remove</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">remove</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+</code></pre>
+<p>Remove the given entity from this component.
+Registers the update in the World contract.
+Can only be called by addresses with write access to this component.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entity</td>
+<td>uint256</td>
+<td>Entity to remove from this component.</td>
+</tr>
+</tbody></table>
+
+<a href="#has-1" id="has-1" style="color: inherit; text-decoration: none;">
+  <h3>has</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">has</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
+</code></pre>
+<p>Check whether the given entity has a value in this component.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entity</td>
+<td>uint256</td>
+<td>Entity to check whether it has a value in this component for.</td>
+</tr>
+</tbody></table>
+
+<a href="#getrawvalue-1" id="getrawvalue-1" style="color: inherit; text-decoration: none;">
+  <h3>getRawValue</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getRawValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-2">)</span>
+</code></pre>
+<p>Get the raw (abi-encoded) value of the given entity in this component.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entity</td>
+<td>uint256</td>
+<td>Entity to get the raw value in this component for.</td>
+</tr>
+</tbody></table>
+
+<a href="#getentities-1" id="getentities-1" style="color: inherit; text-decoration: none;">
+  <h3>getEntities</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntities</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+</code></pre>
+<p>Get a list of all entities that have a value in this component.</p>
+
+<a href="#getentitieswithvalue-1" id="getentitieswithvalue-1" style="color: inherit; text-decoration: none;">
+  <h3>getEntitiesWithValue</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+</code></pre>
+<p>Get a list of all entities that have the specified value in this component.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>value</td>
+<td>bytes</td>
+<td>Abi-encoded value to get the list of entities with this value for.</td>
+</tr>
+</tbody></table>
+
+<a href="#registerindexer-1" id="registerindexer-1" style="color: inherit; text-decoration: none;">
+  <h3>registerIndexer</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">registerIndexer</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">indexer</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
+</code></pre>
+<p>Register a new indexer that gets notified when a component value is set.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>indexer</td>
+<td>address</td>
+<td>Address of the indexer to notify when a component value is set.</td>
+</tr>
+</tbody></table>
+
+<a href="#_set-1" id="_set-1" style="color: inherit; text-decoration: none;">
+  <h3>_set</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">_set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">internal</span>
+</code></pre>
+<p>Set the given component value for the given entity.
+Registers the update in the World contract.
+Can only be called internally (by the component or contracts deriving from it),
+without requiring explicit write access.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entity</td>
+<td>uint256</td>
+<td>Entity to set the value for.</td>
+</tr>
+<tr>
+<td>value</td>
+<td>bytes</td>
+<td>Value to set for the given entity.</td>
+</tr>
+</tbody></table>
+
+<a href="#_remove-1" id="_remove-1" style="color: inherit; text-decoration: none;">
+  <h3>_remove</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">_remove</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">internal</span>
+</code></pre>
+<p>Remove the given entity from this component.
+Registers the update in the World contract.
+Can only be called internally (by the component or contracts deriving from it),
+without requiring explicit write access.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entity</td>
+<td>uint256</td>
+<td>Entity to remove from this component.</td>
+</tr>
+</tbody></table>
+
 <a href="#indexer" id="indexer" style="color: inherit; text-decoration: none;">
   <h2>Indexer</h2>
 </a>
@@ -519,7 +870,7 @@ without requiring explicit write access.</p>
 <pre><code class="language-solidity"><span class="hl-0">mapping</span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-0">=&gt;</span><span class="hl-1"> </span><span class="hl-4">address</span><span class="hl-2">)</span><span class="hl-1"> valueToEntities</span>
 </code></pre>
 
-<a href="#entitytovalue-1" id="entitytovalue-1" style="color: inherit; text-decoration: none;">
+<a href="#entitytovalue-2" id="entitytovalue-2" style="color: inherit; text-decoration: none;">
   <h3>entityToValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">mapping</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-0">=&gt;</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-2">)</span><span class="hl-1"> entityToValue</span>
@@ -537,7 +888,7 @@ without requiring explicit write access.</p>
 <pre><code class="language-solidity"><span class="hl-4">bool</span><span class="hl-2">[]</span><span class="hl-1"> trackValueForComponent</span>
 </code></pre>
 
-<a href="#constructor-1" id="constructor-1" style="color: inherit; text-decoration: none;">
+<a href="#constructor-2" id="constructor-2" style="color: inherit; text-decoration: none;">
   <h3>constructor</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">constructor</span><span class="hl-2">(</span><span class="hl-5">contract</span><span class="hl-1"> </span><span class="hl-0">Component</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">_components</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bool</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">_trackValueForComponent</span><span class="hl-1">) </span><span class="hl-0">public</span>
@@ -549,7 +900,7 @@ without requiring explicit write access.</p>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">update</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
 </code></pre>
 
-<a href="#remove-1" id="remove-1" style="color: inherit; text-decoration: none;">
+<a href="#remove-2" id="remove-2" style="color: inherit; text-decoration: none;">
   <h3>remove</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">remove</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
@@ -592,25 +943,25 @@ without requiring explicit write access.</p>
 </tr>
 </tbody></table>
 
-<a href="#getentities-1" id="getentities-1" style="color: inherit; text-decoration: none;">
+<a href="#getentities-2" id="getentities-2" style="color: inherit; text-decoration: none;">
   <h3>getEntities</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntities</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
 
-<a href="#getentitieswithvalue-1" id="getentitieswithvalue-1" style="color: inherit; text-decoration: none;">
+<a href="#getentitieswithvalue-2" id="getentitieswithvalue-2" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
 
-<a href="#has-1" id="has-1" style="color: inherit; text-decoration: none;">
+<a href="#has-2" id="has-2" style="color: inherit; text-decoration: none;">
   <h3>has</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">has</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#_set-1" id="_set-1" style="color: inherit; text-decoration: none;">
+<a href="#_set-2" id="_set-2" style="color: inherit; text-decoration: none;">
   <h3>_set</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">_set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">newValues</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">internal</span>
@@ -835,13 +1186,13 @@ up the proxy chain must pass, so we can early return if we find one that doesn&#
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">add</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">setKey</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">item</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#remove-2" id="remove-2" style="color: inherit; text-decoration: none;">
+<a href="#remove-3" id="remove-3" style="color: inherit; text-decoration: none;">
   <h3>remove</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">remove</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">setKey</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">item</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#has-2" id="has-2" style="color: inherit; text-decoration: none;">
+<a href="#has-3" id="has-3" style="color: inherit; text-decoration: none;">
   <h3>has</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">has</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">setKey</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">item</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
@@ -859,7 +1210,7 @@ up the proxy chain must pass, so we can early return if we find one that doesn&#
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">size</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">setKey</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#set-1" id="set-1" style="color: inherit; text-decoration: none;">
+<a href="#set-2" id="set-2" style="color: inherit; text-decoration: none;">
   <h2>Set</h2>
 </a>
 <p>Set of unique uint256</p>
@@ -882,7 +1233,7 @@ up the proxy chain must pass, so we can early return if we find one that doesn&#
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">add</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">item</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#remove-3" id="remove-3" style="color: inherit; text-decoration: none;">
+<a href="#remove-4" id="remove-4" style="color: inherit; text-decoration: none;">
   <h3>remove</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">remove</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">item</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
@@ -894,7 +1245,7 @@ up the proxy chain must pass, so we can early return if we find one that doesn&#
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getIndex</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">item</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#has-3" id="has-3" style="color: inherit; text-decoration: none;">
+<a href="#has-4" id="has-4" style="color: inherit; text-decoration: none;">
   <h3>has</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">has</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">item</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
@@ -923,37 +1274,37 @@ up the proxy chain must pass, so we can early return if we find one that doesn&#
 <pre><code class="language-solidity"><span class="hl-1">contract IUint256Component components</span>
 </code></pre>
 
-<a href="#world-2" id="world-2" style="color: inherit; text-decoration: none;">
+<a href="#world-3" id="world-3" style="color: inherit; text-decoration: none;">
   <h3>world</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-1">contract IWorld world</span>
 </code></pre>
 
-<a href="#_owner-1" id="_owner-1" style="color: inherit; text-decoration: none;">
+<a href="#_owner-2" id="_owner-2" style="color: inherit; text-decoration: none;">
   <h3>_owner</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-4">address</span><span class="hl-1"> _owner</span>
 </code></pre>
 
-<a href="#onlyowner-1" id="onlyowner-1" style="color: inherit; text-decoration: none;">
+<a href="#onlyowner-2" id="onlyowner-2" style="color: inherit; text-decoration: none;">
   <h3>onlyOwner</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">modifier</span><span class="hl-1"> </span><span class="hl-3">onlyOwner</span><span class="hl-2">(</span><span class="hl-1">)</span>
 </code></pre>
 
-<a href="#constructor-2" id="constructor-2" style="color: inherit; text-decoration: none;">
+<a href="#constructor-3" id="constructor-3" style="color: inherit; text-decoration: none;">
   <h3>constructor</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">constructor</span><span class="hl-2">(</span><span class="hl-5">contract</span><span class="hl-1"> </span><span class="hl-0">IWorld</span><span class="hl-1"> </span><span class="hl-5">_world</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">_components</span><span class="hl-1">) </span><span class="hl-0">internal</span>
 </code></pre>
 
-<a href="#owner-1" id="owner-1" style="color: inherit; text-decoration: none;">
+<a href="#owner-2" id="owner-2" style="color: inherit; text-decoration: none;">
   <h3>owner</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">owner</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#world-3" id="world-3" style="color: inherit; text-decoration: none;">
+<a href="#world-4" id="world-4" style="color: inherit; text-decoration: none;">
   <h2>World</h2>
 </a>
 <p>The <code>World</code> contract is at the core of every on-chain world.
@@ -1004,7 +1355,7 @@ Clients decide which components and systems they care about.</p>
 <pre><code class="language-solidity"><span class="hl-0">event</span><span class="hl-1"> ComponentValueRemoved</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">componentId</span><span class="hl-1">, </span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">component</span><span class="hl-1">, </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#constructor-3" id="constructor-3" style="color: inherit; text-decoration: none;">
+<a href="#constructor-4" id="constructor-4" style="color: inherit; text-decoration: none;">
   <h3>constructor</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">constructor</span><span class="hl-2">(</span><span class="hl-1">) </span><span class="hl-0">public</span>
@@ -1144,20 +1495,20 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 </a>
 <p>Reference implementation of a component storing a uint256 value for each entity.</p>
 
-<a href="#constructor-4" id="constructor-4" style="color: inherit; text-decoration: none;">
+<a href="#constructor-5" id="constructor-5" style="color: inherit; text-decoration: none;">
   <h3>constructor</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">constructor</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">world</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">id</span><span class="hl-1">) </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#getschema-1" id="getschema-1" style="color: inherit; text-decoration: none;">
+<a href="#getschema-2" id="getschema-2" style="color: inherit; text-decoration: none;">
   <h3>getSchema</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getSchema</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">pure</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">string</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">keys</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-5">enum</span><span class="hl-1"> </span><span class="hl-0">LibTypes</span><span class="hl-1">.SchemaValue</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">values</span><span class="hl-2">)</span>
 </code></pre>
 <p>Return the keys and value types of the schema of this component.</p>
 
-<a href="#set-2" id="set-2" style="color: inherit; text-decoration: none;">
+<a href="#set-3" id="set-3" style="color: inherit; text-decoration: none;">
   <h3>set</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
@@ -1169,7 +1520,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#getentitieswithvalue-2" id="getentitieswithvalue-2" style="color: inherit; text-decoration: none;">
+<a href="#getentitieswithvalue-3" id="getentitieswithvalue-3" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
@@ -1191,46 +1542,58 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
   <h2>IComponent</h2>
 </a>
 
-<a href="#transferownership-1" id="transferownership-1" style="color: inherit; text-decoration: none;">
+<a href="#transferownership-2" id="transferownership-2" style="color: inherit; text-decoration: none;">
   <h3>transferOwnership</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">transferOwnership</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">newOwner</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
 </code></pre>
 
-<a href="#set-3" id="set-3" style="color: inherit; text-decoration: none;">
+<a href="#set-4" id="set-4" style="color: inherit; text-decoration: none;">
   <h3>set</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
 </code></pre>
 
-<a href="#remove-4" id="remove-4" style="color: inherit; text-decoration: none;">
+<a href="#remove-5" id="remove-5" style="color: inherit; text-decoration: none;">
   <h3>remove</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">remove</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
 </code></pre>
 
-<a href="#has-4" id="has-4" style="color: inherit; text-decoration: none;">
+<a href="#has-5" id="has-5" style="color: inherit; text-decoration: none;">
   <h3>has</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">has</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#getrawvalue-1" id="getrawvalue-1" style="color: inherit; text-decoration: none;">
+<a href="#getrawvalue-2" id="getrawvalue-2" style="color: inherit; text-decoration: none;">
   <h3>getRawValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getRawValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#getentities-2" id="getentities-2" style="color: inherit; text-decoration: none;">
+<a href="#getentities-3" id="getentities-3" style="color: inherit; text-decoration: none;">
   <h3>getEntities</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntities</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
 
-<a href="#getentitieswithvalue-3" id="getentitieswithvalue-3" style="color: inherit; text-decoration: none;">
+<a href="#getentitieswithvalue-4" id="getentitieswithvalue-4" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+</code></pre>
+
+<a href="#authorizewriter-2" id="authorizewriter-2" style="color: inherit; text-decoration: none;">
+  <h3>authorizeWriter</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">authorizeWriter</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">writer</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
+</code></pre>
+
+<a href="#unauthorizewriter-2" id="unauthorizewriter-2" style="color: inherit; text-decoration: none;">
+  <h3>unauthorizeWriter</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">unauthorizeWriter</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">writer</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
 </code></pre>
 
 <a href="#ierc165" id="ierc165" style="color: inherit; text-decoration: none;">
@@ -1278,19 +1641,19 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
   <h2>IEntityContainer</h2>
 </a>
 
-<a href="#has-5" id="has-5" style="color: inherit; text-decoration: none;">
+<a href="#has-6" id="has-6" style="color: inherit; text-decoration: none;">
   <h3>has</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">has</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#getentities-3" id="getentities-3" style="color: inherit; text-decoration: none;">
+<a href="#getentities-4" id="getentities-4" style="color: inherit; text-decoration: none;">
   <h3>getEntities</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntities</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
 
-<a href="#getentitieswithvalue-4" id="getentitieswithvalue-4" style="color: inherit; text-decoration: none;">
+<a href="#getentitieswithvalue-5" id="getentitieswithvalue-5" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
@@ -1306,7 +1669,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">update</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
 </code></pre>
 
-<a href="#remove-5" id="remove-5" style="color: inherit; text-decoration: none;">
+<a href="#remove-6" id="remove-6" style="color: inherit; text-decoration: none;">
   <h3>remove</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">remove</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
@@ -1316,7 +1679,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
   <h2>IOwned</h2>
 </a>
 
-<a href="#owner-2" id="owner-2" style="color: inherit; text-decoration: none;">
+<a href="#owner-3" id="owner-3" style="color: inherit; text-decoration: none;">
   <h3>owner</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">owner</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-2">)</span>
@@ -1336,7 +1699,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
   <h2>IUint256Component</h2>
 </a>
 
-<a href="#set-4" id="set-4" style="color: inherit; text-decoration: none;">
+<a href="#set-5" id="set-5" style="color: inherit; text-decoration: none;">
   <h3>set</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span>
@@ -1348,7 +1711,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">)</span>
 </code></pre>
 
-<a href="#getentitieswithvalue-5" id="getentitieswithvalue-5" style="color: inherit; text-decoration: none;">
+<a href="#getentitieswithvalue-6" id="getentitieswithvalue-6" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">external</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
@@ -1466,7 +1829,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <pre><code class="language-solidity"><span class="hl-0">enum</span><span class="hl-1"> RegisterType </span><span class="hl-2">{</span><br/><span class="hl-1">  </span><span class="hl-5">Component</span><span class="hl-2">,</span><br/><span class="hl-1">  </span><span class="hl-5">System</span><br/><span class="hl-2">}</span>
 </code></pre>
 
-<a href="#id-1" id="id-1" style="color: inherit; text-decoration: none;">
+<a href="#id-2" id="id-2" style="color: inherit; text-decoration: none;">
   <h2>ID</h2>
 </a>
 <pre><code class="language-solidity"><span class="hl-4">uint256</span><span class="hl-1"> ID</span>
@@ -1476,7 +1839,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
   <h2>RegisterSystem</h2>
 </a>
 
-<a href="#constructor-5" id="constructor-5" style="color: inherit; text-decoration: none;">
+<a href="#constructor-6" id="constructor-6" style="color: inherit; text-decoration: none;">
   <h3>constructor</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">constructor</span><span class="hl-2">(</span><span class="hl-5">contract</span><span class="hl-1"> </span><span class="hl-0">IWorld</span><span class="hl-1"> </span><span class="hl-5">_world</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">_components</span><span class="hl-1">) </span><span class="hl-0">public</span>
@@ -1768,7 +2131,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <pre><code class="language-solidity"><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-0">payable</span><span class="hl-2">[]</span><span class="hl-1"> users</span>
 </code></pre>
 
-<a href="#set-5" id="set-5" style="color: inherit; text-decoration: none;">
+<a href="#set-6" id="set-6" style="color: inherit; text-decoration: none;">
   <h3>set</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-1">contract Set set</span>
@@ -1832,7 +2195,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <pre><code class="language-solidity"><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-0">payable</span><span class="hl-2">[]</span><span class="hl-1"> users</span>
 </code></pre>
 
-<a href="#world-4" id="world-4" style="color: inherit; text-decoration: none;">
+<a href="#world-5" id="world-5" style="color: inherit; text-decoration: none;">
   <h3>world</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-1">contract World world</span>
@@ -1886,7 +2249,7 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">testQuery</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#id-2" id="id-2" style="color: inherit; text-decoration: none;">
+<a href="#id-3" id="id-3" style="color: inherit; text-decoration: none;">
   <h2>ID</h2>
 </a>
 <pre><code class="language-solidity"><span class="hl-4">uint256</span><span class="hl-1"> ID</span>
@@ -1895,47 +2258,6 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <a href="#damagecomponent" id="damagecomponent" style="color: inherit; text-decoration: none;">
   <h2>DamageComponent</h2>
 </a>
-
-<a href="#constructor-6" id="constructor-6" style="color: inherit; text-decoration: none;">
-  <h3>constructor</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-0">constructor</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">world</span><span class="hl-1">) </span><span class="hl-0">public</span>
-</code></pre>
-
-<a href="#getschema-2" id="getschema-2" style="color: inherit; text-decoration: none;">
-  <h3>getSchema</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getSchema</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">pure</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">string</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">keys</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-5">enum</span><span class="hl-1"> </span><span class="hl-0">LibTypes</span><span class="hl-1">.SchemaValue</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">values</span><span class="hl-2">)</span>
-</code></pre>
-<p>Return the keys and value types of the schema of this component.</p>
-
-<a href="#set-6" id="set-6" style="color: inherit; text-decoration: none;">
-  <h3>set</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
-</code></pre>
-
-<a href="#getvalue-2" id="getvalue-2" style="color: inherit; text-decoration: none;">
-  <h3>getValue</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">)</span>
-</code></pre>
-
-<a href="#getentitieswithvalue-6" id="getentitieswithvalue-6" style="color: inherit; text-decoration: none;">
-  <h3>getEntitiesWithValue</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
-</code></pre>
-
-<a href="#fromprototypecomponent" id="fromprototypecomponent" style="color: inherit; text-decoration: none;">
-  <h2>FromPrototypeComponent</h2>
-</a>
-
-<a href="#id-3" id="id-3" style="color: inherit; text-decoration: none;">
-  <h3>ID</h3>
-</a>
-<pre><code class="language-solidity"><span class="hl-4">uint256</span><span class="hl-1"> ID</span>
-</code></pre>
 
 <a href="#constructor-7" id="constructor-7" style="color: inherit; text-decoration: none;">
   <h3>constructor</h3>
@@ -1953,10 +2275,10 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <a href="#set-7" id="set-7" style="color: inherit; text-decoration: none;">
   <h3>set</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">prototypeEntity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#getvalue-3" id="getvalue-3" style="color: inherit; text-decoration: none;">
+<a href="#getvalue-2" id="getvalue-2" style="color: inherit; text-decoration: none;">
   <h3>getValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">)</span>
@@ -1965,11 +2287,11 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <a href="#getentitieswithvalue-7" id="getentitieswithvalue-7" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">prototypeEntity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
 
-<a href="#ownedbyentitycomponent" id="ownedbyentitycomponent" style="color: inherit; text-decoration: none;">
-  <h2>OwnedByEntityComponent</h2>
+<a href="#fromprototypecomponent" id="fromprototypecomponent" style="color: inherit; text-decoration: none;">
+  <h2>FromPrototypeComponent</h2>
 </a>
 
 <a href="#id-4" id="id-4" style="color: inherit; text-decoration: none;">
@@ -1994,10 +2316,10 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <a href="#set-8" id="set-8" style="color: inherit; text-decoration: none;">
   <h3>set</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">ownedByEntity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">prototypeEntity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#getvalue-4" id="getvalue-4" style="color: inherit; text-decoration: none;">
+<a href="#getvalue-3" id="getvalue-3" style="color: inherit; text-decoration: none;">
   <h3>getValue</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">)</span>
@@ -2006,24 +2328,18 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <a href="#getentitieswithvalue-8" id="getentitieswithvalue-8" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">ownedByEntity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">prototypeEntity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
 
-<a href="#position-1" id="position-1" style="color: inherit; text-decoration: none;">
-  <h2>Position</h2>
+<a href="#ownedbyentitycomponent" id="ownedbyentitycomponent" style="color: inherit; text-decoration: none;">
+  <h2>OwnedByEntityComponent</h2>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">struct</span><span class="hl-1"> Position </span><span class="hl-2">{</span><br/><span class="hl-1">  </span><span class="hl-4">int64</span><span class="hl-1"> x</span><span class="hl-0">;</span><br/><span class="hl-1">  </span><span class="hl-4">int64</span><span class="hl-1"> y</span><span class="hl-0">;</span><br/><span class="hl-2">}</span>
-</code></pre>
 
 <a href="#id-5" id="id-5" style="color: inherit; text-decoration: none;">
-  <h2>ID</h2>
+  <h3>ID</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-4">uint256</span><span class="hl-1"> ID</span>
 </code></pre>
-
-<a href="#positioncomponent" id="positioncomponent" style="color: inherit; text-decoration: none;">
-  <h2>PositionComponent</h2>
-</a>
 
 <a href="#constructor-9" id="constructor-9" style="color: inherit; text-decoration: none;">
   <h3>constructor</h3>
@@ -2041,30 +2357,36 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <a href="#set-9" id="set-9" style="color: inherit; text-decoration: none;">
   <h3>set</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-5">struct</span><span class="hl-1"> </span><span class="hl-0">Position</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">ownedByEntity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#getvalue-5" id="getvalue-5" style="color: inherit; text-decoration: none;">
+<a href="#getvalue-4" id="getvalue-4" style="color: inherit; text-decoration: none;">
   <h3>getValue</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-5">struct</span><span class="hl-1"> </span><span class="hl-0">Position</span><span class="hl-2">)</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">)</span>
 </code></pre>
 
 <a href="#getentitieswithvalue-9" id="getentitieswithvalue-9" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-5">struct</span><span class="hl-1"> </span><span class="hl-0">Position</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">ownedByEntity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
 
-<a href="#prototypetagcomponent" id="prototypetagcomponent" style="color: inherit; text-decoration: none;">
-  <h2>PrototypeTagComponent</h2>
+<a href="#position-1" id="position-1" style="color: inherit; text-decoration: none;">
+  <h2>Position</h2>
 </a>
+<pre><code class="language-solidity"><span class="hl-0">struct</span><span class="hl-1"> Position </span><span class="hl-2">{</span><br/><span class="hl-1">  </span><span class="hl-4">int64</span><span class="hl-1"> x</span><span class="hl-0">;</span><br/><span class="hl-1">  </span><span class="hl-4">int64</span><span class="hl-1"> y</span><span class="hl-0">;</span><br/><span class="hl-2">}</span>
+</code></pre>
 
 <a href="#id-6" id="id-6" style="color: inherit; text-decoration: none;">
-  <h3>ID</h3>
+  <h2>ID</h2>
 </a>
 <pre><code class="language-solidity"><span class="hl-4">uint256</span><span class="hl-1"> ID</span>
 </code></pre>
+
+<a href="#positioncomponent" id="positioncomponent" style="color: inherit; text-decoration: none;">
+  <h2>PositionComponent</h2>
+</a>
 
 <a href="#constructor-10" id="constructor-10" style="color: inherit; text-decoration: none;">
   <h3>constructor</h3>
@@ -2082,23 +2404,23 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 <a href="#set-10" id="set-10" style="color: inherit; text-decoration: none;">
   <h3>set</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bool</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-5">struct</span><span class="hl-1"> </span><span class="hl-0">Position</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
 </code></pre>
 
-<a href="#getvalue-6" id="getvalue-6" style="color: inherit; text-decoration: none;">
+<a href="#getvalue-5" id="getvalue-5" style="color: inherit; text-decoration: none;">
   <h3>getValue</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-5">struct</span><span class="hl-1"> </span><span class="hl-0">Position</span><span class="hl-2">)</span>
 </code></pre>
 
 <a href="#getentitieswithvalue-10" id="getentitieswithvalue-10" style="color: inherit; text-decoration: none;">
   <h3>getEntitiesWithValue</h3>
 </a>
-<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-5">struct</span><span class="hl-1"> </span><span class="hl-0">Position</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
 </code></pre>
 
-<a href="#testcomponent" id="testcomponent" style="color: inherit; text-decoration: none;">
-  <h2>TestComponent</h2>
+<a href="#prototypetagcomponent" id="prototypetagcomponent" style="color: inherit; text-decoration: none;">
+  <h2>PrototypeTagComponent</h2>
 </a>
 
 <a href="#id-7" id="id-7" style="color: inherit; text-decoration: none;">
@@ -2120,8 +2442,26 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 </code></pre>
 <p>Return the keys and value types of the schema of this component.</p>
 
-<a href="#testcomponent1" id="testcomponent1" style="color: inherit; text-decoration: none;">
-  <h2>TestComponent1</h2>
+<a href="#set-11" id="set-11" style="color: inherit; text-decoration: none;">
+  <h3>set</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">set</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-4">bool</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span>
+</code></pre>
+
+<a href="#getvalue-6" id="getvalue-6" style="color: inherit; text-decoration: none;">
+  <h3>getValue</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getValue</span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-1"> </span><span class="hl-5">entity</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-2">)</span>
+</code></pre>
+
+<a href="#getentitieswithvalue-11" id="getentitieswithvalue-11" style="color: inherit; text-decoration: none;">
+  <h3>getEntitiesWithValue</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getEntitiesWithValue</span><span class="hl-2">(</span><span class="hl-4">bool</span><span class="hl-1"> </span><span class="hl-5">value</span><span class="hl-2">)</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">view</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">uint256</span><span class="hl-2">[])</span>
+</code></pre>
+
+<a href="#testcomponent" id="testcomponent" style="color: inherit; text-decoration: none;">
+  <h2>TestComponent</h2>
 </a>
 
 <a href="#id-8" id="id-8" style="color: inherit; text-decoration: none;">
@@ -2143,8 +2483,8 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 </code></pre>
 <p>Return the keys and value types of the schema of this component.</p>
 
-<a href="#testcomponent2" id="testcomponent2" style="color: inherit; text-decoration: none;">
-  <h2>TestComponent2</h2>
+<a href="#testcomponent1" id="testcomponent1" style="color: inherit; text-decoration: none;">
+  <h2>TestComponent1</h2>
 </a>
 
 <a href="#id-9" id="id-9" style="color: inherit; text-decoration: none;">
@@ -2166,8 +2506,8 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 </code></pre>
 <p>Return the keys and value types of the schema of this component.</p>
 
-<a href="#testcomponent3" id="testcomponent3" style="color: inherit; text-decoration: none;">
-  <h2>TestComponent3</h2>
+<a href="#testcomponent2" id="testcomponent2" style="color: inherit; text-decoration: none;">
+  <h2>TestComponent2</h2>
 </a>
 
 <a href="#id-10" id="id-10" style="color: inherit; text-decoration: none;">
@@ -2189,8 +2529,8 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 </code></pre>
 <p>Return the keys and value types of the schema of this component.</p>
 
-<a href="#testcomponent4" id="testcomponent4" style="color: inherit; text-decoration: none;">
-  <h2>TestComponent4</h2>
+<a href="#testcomponent3" id="testcomponent3" style="color: inherit; text-decoration: none;">
+  <h2>TestComponent3</h2>
 </a>
 
 <a href="#id-11" id="id-11" style="color: inherit; text-decoration: none;">
@@ -2206,6 +2546,29 @@ Emits the <code>ComponentValueRemoved</code> event for clients to reconstruct th
 </code></pre>
 
 <a href="#getschema-11" id="getschema-11" style="color: inherit; text-decoration: none;">
+  <h3>getSchema</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getSchema</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">pure</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">string</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">keys</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-5">enum</span><span class="hl-1"> </span><span class="hl-0">LibTypes</span><span class="hl-1">.SchemaValue</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">values</span><span class="hl-2">)</span>
+</code></pre>
+<p>Return the keys and value types of the schema of this component.</p>
+
+<a href="#testcomponent4" id="testcomponent4" style="color: inherit; text-decoration: none;">
+  <h2>TestComponent4</h2>
+</a>
+
+<a href="#id-12" id="id-12" style="color: inherit; text-decoration: none;">
+  <h3>ID</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-4">uint256</span><span class="hl-1"> ID</span>
+</code></pre>
+
+<a href="#constructor-16" id="constructor-16" style="color: inherit; text-decoration: none;">
+  <h3>constructor</h3>
+</a>
+<pre><code class="language-solidity"><span class="hl-0">constructor</span><span class="hl-2">(</span><span class="hl-4">address</span><span class="hl-1"> </span><span class="hl-5">world</span><span class="hl-1">) </span><span class="hl-0">public</span>
+</code></pre>
+
+<a href="#getschema-12" id="getschema-12" style="color: inherit; text-decoration: none;">
   <h3>getSchema</h3>
 </a>
 <pre><code class="language-solidity"><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-3">getSchema</span><span class="hl-2">()</span><span class="hl-1"> </span><span class="hl-0">public</span><span class="hl-1"> </span><span class="hl-0">pure</span><span class="hl-1"> </span><span class="hl-0">returns</span><span class="hl-1"> </span><span class="hl-2">(</span><span class="hl-4">string</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">keys</span><span class="hl-2">,</span><span class="hl-1"> </span><span class="hl-5">enum</span><span class="hl-1"> </span><span class="hl-0">LibTypes</span><span class="hl-1">.SchemaValue</span><span class="hl-2">[]</span><span class="hl-1"> </span><span class="hl-5">values</span><span class="hl-2">)</span>
