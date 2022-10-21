@@ -20,6 +20,10 @@ var (
 	verifyAccountBalance   = flag.Bool("verify-account-balance", false, "Whether to service-side verify that the account has sufficient balance when relaying message. Defaults to false.")
 	messageRateLimit       = flag.Int("msg-rate-limit", 10, "Rate limit for messages per second that a single client can push to be relayed. Defaults to 10")
 	metricsPort            = flag.Int("metrics-port", 6060, "Prometheus metrics http handler port. Defaults to port 6060")
+	useP2P                 = flag.Bool("use-p2p", false, "Whether to connect to the relay p2p network. Defaults to false.")
+	runP2PNode             = flag.Bool("run-p2p-node", false, "Whether to run a p2p node internally. Defaults to false.")
+	p2pNodeAddress         = flag.String("p2p-node-address", "http://localhost:35000", "Address of the relay p2p node to connect to. Defaults to false.")
+	verifyP2PMessages      = flag.Bool("verify-p2p-msg", true, "Whether to verify messages received from the p2p node. Defaults to true.")
 )
 
 func main() {
@@ -40,11 +44,23 @@ func main() {
 		VerifyMessageSignature: *verifyMessageSignature,
 		VerifyAccountBalance:   *verifyAccountBalance,
 		MessageRateLimit:       *messageRateLimit,
+		UseP2P:                 *useP2P,
+		VerifyP2PMessages:      *verifyP2PMessages,
 	}
 
 	// Get an instance of ethereum client.
 	ethClient := eth.GetEthereumClient(*wsUrl, logger)
 
+	// Get an instance of a remote/internal connection to a p2p node
+	var p2pConn relay.P2PConn
+	if *runP2PNode {
+		// Start P2P node [unimplemented]
+	} else {
+		// Connect to remote p2p node at p2p-node-address [unimplemented]
+	}
+	// Mock the non-implemented behavior
+	p2pConn = relay.NewMockP2PConn(logger)
+
 	// Start gRPC server and the relayer.
-	grpc.StartRelayServer(*port, *metricsPort, ethClient, config, logger)
+	grpc.StartRelayServer(*port, *metricsPort, ethClient, p2pConn, config, logger)
 }

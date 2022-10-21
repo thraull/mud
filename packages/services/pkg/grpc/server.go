@@ -160,12 +160,14 @@ func StartSnapshotServer(grpcPort int, metricsPort int, config *snapshot.Snapsho
 	go startHTTPServer(createWebGrpcServer(grpcServer), grpcPort+1, logger)
 }
 
-func StartRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, config *relay.RelayServerConfig, logger *zap.Logger) {
+func StartRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, p2pConn relay.P2PConn, config *relay.RelayServerConfig, logger *zap.Logger) {
 	// Create gRPC server.
 	grpcServer := createGrpcServer()
 
+	relayServer := createRelayServer(logger, ethClient, p2pConn, config)
+
 	// Create and register relay service server.
-	pb_relay.RegisterECSRelayServiceServer(grpcServer, createRelayServer(logger, ethClient, config))
+	pb_relay.RegisterECSRelayServiceServer(grpcServer, relayServer)
 
 	// Start the RPC server at PORT.
 	go startRPCServer(grpcServer, grpcPort, logger)
@@ -217,11 +219,12 @@ func createSnapshotServer(config *snapshot.SnapshotServerConfig) *ecsSnapshotSer
 	}
 }
 
-func createRelayServer(logger *zap.Logger, ethClient *ethclient.Client, config *relay.RelayServerConfig) *ecsRelayServer {
+func createRelayServer(logger *zap.Logger, ethClient *ethclient.Client, p2pConn relay.P2PConn, config *relay.RelayServerConfig) *ecsRelayServer {
 	server := &ecsRelayServer{
 		logger:    logger,
 		ethClient: ethClient,
 		config:    config,
+		p2pConn:   p2pConn,
 	}
 	server.Init()
 	return server

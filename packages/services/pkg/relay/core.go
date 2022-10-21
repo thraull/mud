@@ -21,6 +21,9 @@ type RelayServerConfig struct {
 	VerifyMessageSignature bool
 	VerifyAccountBalance   bool
 	MessageRateLimit       int
+
+	UseP2P            bool
+	VerifyP2PMessages bool
 }
 
 type Client struct {
@@ -235,7 +238,7 @@ func (label *MessageLabel) Propagate(message *pb.Message, origin *pb.Identity) {
 		// Only pipe to clients that are connected and not the client which is the origin of
 		// the message.
 		client.mutex.Lock()
-		if client.identity.Name != origin.Name && client.connected {
+		if (origin == nil || client.identity.Name != origin.Name) && client.connected {
 			client.channel <- message
 		}
 		client.mutex.Unlock()

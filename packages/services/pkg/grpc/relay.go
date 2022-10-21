@@ -23,6 +23,8 @@ type ecsRelayServer struct {
 	ethClient *ethclient.Client
 	config    *relay.RelayServerConfig
 	logger    *zap.Logger
+
+	p2pConn relay.P2PConn
 }
 
 func (server *ecsRelayServer) Init() {
@@ -34,6 +36,11 @@ func (server *ecsRelayServer) Init() {
 		time.NewTicker(time.Duration(server.config.IdleDisconnectIterval)*time.Second),
 		make(chan struct{}),
 	)
+
+	if server.config.UseP2P {
+		// Kick off a worker to handle PushRequests from the p2p node
+		go server.P2PReceiveWorker()
+	}
 }
 
 func (server *ecsRelayServer) DisconnectIdleClients(idleTimeoutTime int) int {
@@ -60,6 +67,19 @@ func (server *ecsRelayServer) DisconnectIdleClientsWorker(ticker *time.Ticker, q
 		case <-quit:
 			ticker.Stop()
 			return
+		}
+	}
+}
+
+func (server *ecsRelayServer) P2PReceiveWorker() {
+	for {
+		request, err := server.p2pConn.Receive()
+		if err != nil {
+			server.logger.Info("error receiving p2p push request", zap.Error(err))
+		}
+		err = server.HandleP2PPushRequest(request)
+		if err != nil {
+			server.logger.Info("error handling p2p push request", zap.Error(err))
 		}
 	}
 }
@@ -365,6 +385,42 @@ func (server *ecsRelayServer) HandlePushRequest(request *pb.PushRequest) error {
 
 	// Update the ping timer on the client since the client has just pushed a valid message.
 	client.Ping()
+
+	if server.config.UseP2P {
+		err := server.p2pConn.Send(request)
+		if err != nil {
+			server.logger.Info("error sending p2p request", zap.Error(err))
+		}
+	}
+
+	return nil
+}
+
+func (server *ecsRelayServer) HandleP2PPushRequest(request *pb.PushRequest) error {
+	// The value of identity will only be set if we verify the message.
+	var identity *pb.Identity
+	// We delegate p2p balance-checking to the p2p node.
+	// We trust the connection to be rate limited.
+	// We may optionally re-verify the node's messages.
+	if server.config.VerifyP2PMessages {
+		_, recoveredAddress, err := server.VerifyMessageSignature(request.Message, nil)
+		if err != nil {
+			return err
+		}
+		identity = &pb.Identity{Name: recoveredAddress}
+		// Verify that the message is OK to relay.
+		err = server.VerifyMessage(request.Message, identity)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Relay the message.
+	label := server.GetLabel(request.Label)
+	// If we didn't re-verify the message, identity will be nil. Therefore, we will
+	// propagate the message to all clients without checking their identity doesn't
+	// mach the message's.
+	label.Propagate(request.Message, identity)
 
 	return nil
 }
