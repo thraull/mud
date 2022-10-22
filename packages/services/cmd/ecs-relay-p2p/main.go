@@ -38,6 +38,6 @@ func main() {
 	// Get an instance of ethereum client.
 	ethClient := eth.GetEthereumClient(*wsUrl, logger)
 
-	// Start gRPC server and the p2p node (p2p not yet implemented).
+	// Start gRPC server and the p2p node (unimplemented).
 	grpc.StartP2PRelayServer(*port, *metricsPort, ethClient, config, logger)
 }

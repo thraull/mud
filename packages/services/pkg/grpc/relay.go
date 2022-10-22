@@ -57,7 +57,7 @@ func (server *ecsRelayServer) Init() {
 		server.p2pRecvStream = recvStream
 		server.p2pSendStream = sendStream
 
-		// Kick off a worker to handle PushRequests from the p2p node
+		// Kick off a worker to handle PushRequests from the p2p server.
 		go server.P2PRecvWorker()
 	}
 }

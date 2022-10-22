@@ -53,13 +53,13 @@ func main() {
 	// Get an instance of ethereum client.
 	ethClient := eth.GetEthereumClient(*wsUrl, logger)
 
-	// Get an instance of a remote/internal connection to a p2p node
+	// Get an instance of p2p client.
 	var p2pClient pb.P2PRelayServiceClient
 	if !*useP2P {
 		// Don't use p2p
 		p2pClient = nil
 	} else if *externalP2PNode {
-		// Connect to an external p2p node
+		// Connect to an external p2p server.
 		p2pClient = grpc.NewP2PClientRemote(*p2pAddress, logger)
 	} else {
 		// Run and connect to an internal p2p node

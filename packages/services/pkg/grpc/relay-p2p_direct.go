@@ -22,7 +22,7 @@ func NewP2PClientRemote(addr string, logger *zap.Logger) *P2PClientRemote {
 	// TODO: Set dial options
 	conn, err := grpc.Dial(addr)
 	if err != nil {
-		logger.Info("error dialing remote p2p node", zap.Error(err))
+		logger.Info("error dialing remote p2p server", zap.Error(err))
 		return nil
 	}
 	client := pb_relay.NewP2PRelayServiceClient(conn)
