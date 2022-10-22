@@ -2,6 +2,7 @@
 import Long from "long";
 import { CallContext, CallOptions } from "nice-grpc-common";
 import _m0 from "protobufjs/minimal";
+import { Empty } from "./google/protobuf/empty";
 
 export const protobufPackage = "ecsrelay";
 
@@ -701,6 +702,47 @@ export interface ECSRelayServiceClient<CallOptionsExt = {}> {
     request: DeepPartial<BalanceRequest>,
     options?: CallOptions & CallOptionsExt
   ): Promise<BalanceResponse>;
+}
+
+/** TODO: Replace generic empties by specific ones for consistency [?] */
+export type P2PRelayServiceDefinition = typeof P2PRelayServiceDefinition;
+export const P2PRelayServiceDefinition = {
+  name: "P2PRelayService",
+  fullName: "ecsrelay.P2PRelayService",
+  methods: {
+    openStream: {
+      name: "OpenStream",
+      requestType: Empty,
+      requestStream: false,
+      responseType: PushRequest,
+      responseStream: true,
+      options: {},
+    },
+    /** Push a stream of messages to be relayed. */
+    pushStream: {
+      name: "PushStream",
+      requestType: PushRequest,
+      requestStream: true,
+      responseType: Empty,
+      responseStream: false,
+      options: {},
+    },
+  },
+} as const;
+
+export interface P2PRelayServiceServiceImplementation<CallContextExt = {}> {
+  openStream(
+    request: Empty,
+    context: CallContext & CallContextExt
+  ): ServerStreamingMethodResult<DeepPartial<PushRequest>>;
+  /** Push a stream of messages to be relayed. */
+  pushStream(request: AsyncIterable<PushRequest>, context: CallContext & CallContextExt): Promise<DeepPartial<Empty>>;
+}
+
+export interface P2PRelayServiceClient<CallOptionsExt = {}> {
+  openStream(request: DeepPartial<Empty>, options?: CallOptions & CallOptionsExt): AsyncIterable<PushRequest>;
+  /** Push a stream of messages to be relayed. */
+  pushStream(request: AsyncIterable<DeepPartial<PushRequest>>, options?: CallOptions & CallOptionsExt): Promise<Empty>;
 }
 
 declare var self: any | undefined;
