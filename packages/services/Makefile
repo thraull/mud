@@ -45,7 +45,7 @@ protoc-ts:
 	--proto_path proto proto/faucet.proto 
 .PHONY: protoc-ts
 
-build: ecs-stream ecs-snapshot ecs-relay faucet
+build: ecs-stream ecs-snapshot ecs-relay ecs-relay-p2p faucet
 .PHONY: build
 
 ecs-stream:
@@ -59,6 +59,10 @@ ecs-snapshot:
 ecs-relay:
 	go build $(LDFLAGS) -o ./bin/ecs-relay ./cmd/ecs-relay
 .PHONY: ecs-relay
+
+ecs-relay-p2p:
+	go build $(LDFLAGS) -o ./bin/ecs-relay-p2p ./cmd/ecs-relay-p2p
+.PHONY: ecs-relay-p2p
 
 faucet:
 	go build $(LDFLAGS) -o ./bin/faucet ./cmd/faucet
@@ -75,6 +79,10 @@ run-ecs-snapshot:
 run-ecs-relay:
 	./bin/ecs-relay
 .PHONY: run-ecs-relay
+
+run-ecs-relay-p2p:
+	./bin/ecs-relay-p2p
+.PHONY: run-ecs-relay-p2p
 
 run-faucet:
 	./bin/faucet --faucet-private-key ${FAUCET_PK}
