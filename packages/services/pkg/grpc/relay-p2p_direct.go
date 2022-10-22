@@ -6,14 +6,15 @@ import (
 	"latticexyz/mud/packages/services/pkg/relay"
 	pb_relay "latticexyz/mud/packages/services/protobuf/go/ecs-relay"
 
+	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func NewP2PClientDirect(config *relay.P2PRelayServerConfig, logger *zap.Logger) *P2PClientDirect {
-	server := createP2PRelayServer(logger, config)
+func NewP2PClientDirect(config *relay.P2PRelayServerConfig, ethClient *ethclient.Client, logger *zap.Logger) *P2PClientDirect {
+	server := createP2PRelayServer(logger, ethClient, config)
 	return &P2PClientDirect{server: server}
 }
 
@@ -22,6 +23,7 @@ func NewP2PClientRemote(addr string, logger *zap.Logger) *P2PClientRemote {
 	conn, err := grpc.Dial(addr)
 	if err != nil {
 		logger.Info("error dialing remote p2p node", zap.Error(err))
+		return nil
 	}
 	client := pb_relay.NewP2PRelayServiceClient(conn)
 	return &P2PClientRemote{client: client}

@@ -64,7 +64,7 @@ func main() {
 	} else {
 		// We run and connect to an internal p2p node
 		p2pConfig := &relay.P2PRelayServerConfig{}
-		p2pClient = grpc.NewP2PClientDirect(p2pConfig, logger)
+		p2pClient = grpc.NewP2PClientDirect(p2pConfig, ethClient, logger)
 	}
 
 	// Start gRPC server and the relayer.

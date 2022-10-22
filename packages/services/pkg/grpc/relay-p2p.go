@@ -5,15 +5,19 @@ import (
 	"latticexyz/mud/packages/services/pkg/relay"
 	pb "latticexyz/mud/packages/services/protobuf/go/ecs-relay"
 
+	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type p2PRelayServer struct {
 	pb.UnimplementedP2PRelayServiceServer
-	config *relay.P2PRelayServerConfig
-	logger *zap.Logger
-	loop   chan *pb.PushRequest
+
+	ethClient *ethclient.Client
+	config    *relay.P2PRelayServerConfig
+	logger    *zap.Logger
+
+	loop chan *pb.PushRequest
 }
 
 func (server *p2PRelayServer) Init() {}
