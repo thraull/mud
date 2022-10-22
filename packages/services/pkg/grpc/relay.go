@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type ecsRelayServer struct {
@@ -24,7 +25,9 @@ type ecsRelayServer struct {
 	config    *relay.RelayServerConfig
 	logger    *zap.Logger
 
-	p2pConn relay.P2PConn
+	p2pNode       pb.P2PRelayServiceClient
+	p2pRecvStream pb.P2PRelayService_OpenStreamClient
+	p2pSendStream pb.P2PRelayService_PushStreamClient
 }
 
 func (server *ecsRelayServer) Init() {
@@ -38,8 +41,24 @@ func (server *ecsRelayServer) Init() {
 	)
 
 	if server.config.UseP2P {
+		// Open p2p read stream
+		in := new(emptypb.Empty)
+		recvStream, err := server.p2pNode.OpenStream(context.Background(), in)
+		if err != nil {
+			server.logger.Info("error opening read stream from p2p", zap.Error(err))
+		}
+
+		// Open p2p write stream
+		sendStream, err := server.p2pNode.PushStream(context.Background())
+		if err != nil {
+			server.logger.Info("error opening write stream from p2p", zap.Error(err))
+		}
+
+		server.p2pRecvStream = recvStream
+		server.p2pSendStream = sendStream
+
 		// Kick off a worker to handle PushRequests from the p2p node
-		go server.P2PReceiveWorker()
+		go server.P2PRecvWorker()
 	}
 }
 
@@ -71,9 +90,9 @@ func (server *ecsRelayServer) DisconnectIdleClientsWorker(ticker *time.Ticker, q
 	}
 }
 
-func (server *ecsRelayServer) P2PReceiveWorker() {
+func (server *ecsRelayServer) P2PRecvWorker() {
 	for {
-		request, err := server.p2pConn.Receive()
+		request, err := server.p2pRecvStream.Recv()
 		if err != nil {
 			server.logger.Info("error receiving p2p push request", zap.Error(err))
 		}
@@ -387,9 +406,9 @@ func (server *ecsRelayServer) HandlePushRequest(request *pb.PushRequest) error {
 	client.Ping()
 
 	if server.config.UseP2P {
-		err := server.p2pConn.Send(request)
+		err := server.p2pSendStream.Send(request)
 		if err != nil {
-			server.logger.Info("error sending p2p request", zap.Error(err))
+			server.logger.Info("error sending p2p push request", zap.Error(err))
 		}
 	}
 

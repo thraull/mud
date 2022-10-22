@@ -1,4 +1,7 @@
 syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
 package ecsrelay;
 
 option go_package = "protobuf/go/ecs-relay";
@@ -43,6 +46,13 @@ service ECSRelayService {
 
   // Minimum balance an account must have to be able to push.
   rpc MinBalanceForPush(BalanceRequest) returns (BalanceResponse) {}
+}
+
+service P2PRelayService {
+  rpc OpenStream(google.protobuf.Empty) returns (stream PushRequest) {}
+
+  // Push a stream of messages to be relayed.
+  rpc PushStream(stream PushRequest) returns (google.protobuf.Empty) {}
 }
 
 message SubscriptionRequest {

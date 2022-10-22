@@ -160,14 +160,33 @@ func StartSnapshotServer(grpcPort int, metricsPort int, config *snapshot.Snapsho
 	go startHTTPServer(createWebGrpcServer(grpcServer), grpcPort+1, logger)
 }
 
-func StartRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, p2pConn relay.P2PConn, config *relay.RelayServerConfig, logger *zap.Logger) {
+func StartRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, p2pClient pb_relay.P2PRelayServiceClient, config *relay.RelayServerConfig, logger *zap.Logger) {
 	// Create gRPC server.
 	grpcServer := createGrpcServer()
 
-	relayServer := createRelayServer(logger, ethClient, p2pConn, config)
+	relayServer := createRelayServer(logger, ethClient, p2pClient, config)
 
 	// Create and register relay service server.
 	pb_relay.RegisterECSRelayServiceServer(grpcServer, relayServer)
+
+	// Start the RPC server at PORT.
+	go startRPCServer(grpcServer, grpcPort, logger)
+
+	// Start a metric HTTP server.
+	go startMetricsServer(metricsPort, logger)
+
+	// Start the HTTP server at PORT+1.
+	startHTTPServer(createWebGrpcServerWithWebsockets(grpcServer), grpcPort+1, logger)
+}
+
+func StartP2PRelayServer(grpcPort int, metricsPort int, config *relay.P2PRelayServerConfig, logger *zap.Logger) {
+	// Create gRPC server.
+	grpcServer := createGrpcServer()
+
+	relayP2PServer := createP2PRelayServer(logger, config)
+
+	// Create and register relay service server.
+	pb_relay.RegisterP2PRelayServiceServer(grpcServer, relayP2PServer)
 
 	// Start the RPC server at PORT.
 	go startRPCServer(grpcServer, grpcPort, logger)
@@ -219,12 +238,21 @@ func createSnapshotServer(config *snapshot.SnapshotServerConfig) *ecsSnapshotSer
 	}
 }
 
-func createRelayServer(logger *zap.Logger, ethClient *ethclient.Client, p2pConn relay.P2PConn, config *relay.RelayServerConfig) *ecsRelayServer {
+func createRelayServer(logger *zap.Logger, ethClient *ethclient.Client, p2pClient pb_relay.P2PRelayServiceClient, config *relay.RelayServerConfig) *ecsRelayServer {
 	server := &ecsRelayServer{
 		logger:    logger,
 		ethClient: ethClient,
 		config:    config,
-		p2pConn:   p2pConn,
+		p2pNode:   p2pClient,
+	}
+	server.Init()
+	return server
+}
+
+func createP2PRelayServer(logger *zap.Logger, config *relay.P2PRelayServerConfig) *p2PRelayServer {
+	server := &p2PRelayServer{
+		logger: logger,
+		loop:   make(chan *pb_relay.PushRequest),
 	}
 	server.Init()
 	return server
