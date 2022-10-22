@@ -243,7 +243,7 @@ func createRelayServer(logger *zap.Logger, ethClient *ethclient.Client, p2pClien
 		ethClient: ethClient,
 		config:    config,
 		logger:    logger,
-		p2pNode:   p2pClient,
+		p2pClient: p2pClient,
 	}
 	server.Init()
 	return server

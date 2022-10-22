@@ -25,7 +25,7 @@ type ecsRelayServer struct {
 	config    *relay.RelayServerConfig
 	logger    *zap.Logger
 
-	p2pNode       pb.P2PRelayServiceClient
+	p2pClient     pb.P2PRelayServiceClient
 	p2pRecvStream pb.P2PRelayService_OpenStreamClient
 	p2pSendStream pb.P2PRelayService_PushStreamClient
 }
@@ -43,13 +43,13 @@ func (server *ecsRelayServer) Init() {
 	if server.config.UseP2P {
 		// Open p2p read stream
 		in := new(emptypb.Empty)
-		recvStream, err := server.p2pNode.OpenStream(context.Background(), in)
+		recvStream, err := server.p2pClient.OpenStream(context.Background(), in)
 		if err != nil {
 			server.logger.Info("error opening read stream from p2p", zap.Error(err))
 		}
 
 		// Open p2p write stream
-		sendStream, err := server.p2pNode.PushStream(context.Background())
+		sendStream, err := server.p2pClient.PushStream(context.Background())
 		if err != nil {
 			server.logger.Info("error opening write stream from p2p", zap.Error(err))
 		}
