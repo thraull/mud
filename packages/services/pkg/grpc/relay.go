@@ -416,11 +416,10 @@ func (server *ecsRelayServer) HandlePushRequest(request *pb.PushRequest) error {
 }
 
 func (server *ecsRelayServer) HandleP2PPushRequest(request *pb.PushRequest) error {
-	// The value of identity will only be set if we verify the message.
 	var identity *pb.Identity
-	// We delegate p2p balance-checking to the p2p node.
-	// We trust the connection to be rate limited.
-	// We may optionally re-verify the node's messages.
+	// P2P balance-checking is delegated to the p2p node.
+	// The connection is trusted to be rate-limited.
+	// P2P messages can optionally be re-verified by the relayer.
 	if server.config.VerifyP2PMessages {
 		_, recoveredAddress, err := server.VerifyMessageSignature(request.Message, nil)
 		if err != nil {
@@ -436,9 +435,8 @@ func (server *ecsRelayServer) HandleP2PPushRequest(request *pb.PushRequest) erro
 
 	// Relay the message.
 	label := server.GetLabel(request.Label)
-	// If we didn't re-verify the message, identity will be nil. Therefore, we will
-	// propagate the message to all clients without checking their identity doesn't
-	// mach the message's.
+	// If the message has not been re-verified, identity is nil and the message is
+	// propagated to all clients without checking their identity doesn't mach the message's.
 	label.Propagate(request.Message, identity)
 
 	return nil

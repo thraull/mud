@@ -10,6 +10,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// THIS IS A MOCK
+// This code attempts to mimic the behavior of the unimplemented p2p system.
+// The mock p2p server streams back the messages it receives from the client.
+
 type p2PRelayServer struct {
 	pb.UnimplementedP2PRelayServiceServer
 
@@ -31,7 +35,7 @@ func (server *p2PRelayServer) OpenStream(_ *emptypb.Empty, stream pb.P2PRelaySer
 }
 
 func (server *p2PRelayServer) PushStream(stream pb.P2PRelayService_PushStreamServer) error {
-	// Continuously receive message relay requests, handle to relay, and respond with confirmations.
+	// Continuously receive message relay requests and handle them.
 	for {
 		// Receive request message from input stream.
 		request, err := stream.Recv()

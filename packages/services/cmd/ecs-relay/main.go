@@ -56,13 +56,13 @@ func main() {
 	// Get an instance of a remote/internal connection to a p2p node
 	var p2pClient pb.P2PRelayServiceClient
 	if !*useP2P {
-		// We don't use p2p
+		// Don't use p2p
 		p2pClient = nil
 	} else if *externalP2PNode {
-		// We connect to an external p2p node
+		// Connect to an external p2p node
 		p2pClient = grpc.NewP2PClientRemote(*p2pNodeAddress, logger)
 	} else {
-		// We run and connect to an internal p2p node
+		// Run and connect to an internal p2p node
 		p2pConfig := &relay.P2PRelayServerConfig{}
 		p2pClient = grpc.NewP2PClientDirect(p2pConfig, ethClient, logger)
 	}

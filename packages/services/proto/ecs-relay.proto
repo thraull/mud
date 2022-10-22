@@ -48,6 +48,7 @@ service ECSRelayService {
   rpc MinBalanceForPush(BalanceRequest) returns (BalanceResponse) {}
 }
 
+// TODO: Replace generic empties by specific ones for consistency [?]
 service P2PRelayService {
   rpc OpenStream(google.protobuf.Empty) returns (stream PushRequest) {}
 

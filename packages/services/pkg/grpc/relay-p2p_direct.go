@@ -47,6 +47,7 @@ func (client *P2PClientRemote) PushStream(ctx context.Context, opts ...grpc.Call
 }
 
 // **** Direct client ****
+// For every RPC, implement server and client-side streams and link them with a channel.
 
 type P2PClientDirect struct {
 	server pb_relay.P2PRelayServiceServer
@@ -64,7 +65,7 @@ type EmptyReply struct {
 
 // OPEN_STREAM [ SERVER -> CLIENT ]
 
-// Wrap the server-side stream for OpenStream (server -> client)
+// Server-side stream for OpenStream (server -> client)
 
 type P2POpenStreamStreamServer struct {
 	ch  chan *PushRequestReply
@@ -86,7 +87,7 @@ func (s *P2POpenStreamStreamServer) Err(err error) {
 	s.ch <- &PushRequestReply{err: err}
 }
 
-// Wrap the client-side stream for OpenStream (server -> client)
+// Client-side stream for OpenStream (server -> client)
 
 type P2POpenStreamStreamClient struct {
 	ch  chan *PushRequestReply
@@ -114,7 +115,7 @@ func (c *P2POpenStreamStreamClient) RecvMsg(anyMessage interface{}) error {
 	return nil
 }
 
-// Implement direct client for OpenStream
+// Direct client for OpenStream
 
 func (client *P2PClientDirect) OpenStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (pb_relay.P2PRelayService_OpenStreamClient, error) {
 	// 16384 = 2^14. This is what erigon has hard-coded.
@@ -129,7 +130,7 @@ func (client *P2PClientDirect) OpenStream(ctx context.Context, in *emptypb.Empty
 
 // PUSH_STREAM [ CLIENT -> SERVER ]
 
-// Wrap the server-side stream of PushStream (client -> server)
+// Server-side stream of PushStream (client -> server)
 
 type P2PPushStreamStreamServer struct {
 	csCh chan *PushRequestReply
@@ -158,13 +159,12 @@ func (s *P2PPushStreamStreamServer) RecvMsg(anyMessage interface{}) error {
 	return nil
 }
 
-// TODO: reply generic empties by specific ones
 func (s *P2PPushStreamStreamServer) SendAndClose(m *emptypb.Empty) error {
 	s.scCh <- &EmptyReply{r: m}
 	return nil
 }
 
-// Wrap the client-side stream of PushStream (client -> server)
+// Client-side stream of PushStream (client -> server)
 
 type P2PPushStreamStreamClient struct {
 	csCh chan *PushRequestReply
@@ -193,7 +193,7 @@ func (c *P2PPushStreamStreamClient) CloseAndRecv() (*emptypb.Empty, error) {
 	return m.r, m.err
 }
 
-// Implement direct client for PushStream
+// Direct client for PushStream
 
 func (client *P2PClientDirect) PushStream(ctx context.Context, opts ...grpc.CallOption) (pb_relay.P2PRelayService_PushStreamClient, error) {
 	csCh := make(chan *PushRequestReply, 16384)
