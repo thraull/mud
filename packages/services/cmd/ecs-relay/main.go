@@ -24,7 +24,7 @@ var (
 	metricsPort            = flag.Int("metrics-port", 6060, "Prometheus metrics http handler port. Defaults to port 6060")
 	useP2P                 = flag.Bool("use-p2p", false, "Whether to connect to the relay p2p network. Defaults to false.")
 	externalP2PNode        = flag.Bool("external-p2p-node", false, "Whether to connect to an external p2p node instead of running one internally. Defaults to false.")
-	p2pNodeAddress         = flag.String("p2p-node-address", "http://localhost:35000", "Address of the relay p2p node to connect to. Defaults to false.")
+	p2pAddress             = flag.String("p2p-address", "http://localhost:35000", "Address of the relay p2p server to connect to. Defaults to false.")
 	verifyP2PMessages      = flag.Bool("verify-p2p-msg", true, "Whether to verify messages received from the p2p node. Defaults to true.")
 )
 
@@ -60,7 +60,7 @@ func main() {
 		p2pClient = nil
 	} else if *externalP2PNode {
 		// Connect to an external p2p node
-		p2pClient = grpc.NewP2PClientRemote(*p2pNodeAddress, logger)
+		p2pClient = grpc.NewP2PClientRemote(*p2pAddress, logger)
 	} else {
 		// Run and connect to an internal p2p node
 		p2pConfig := &relay.P2PRelayServerConfig{}
