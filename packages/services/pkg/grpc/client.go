@@ -9,17 +9,25 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func getGrpcConnection(addr string, logger *zap.Logger) *grpc.ClientConn {
 	var conn *grpc.ClientConn
 	var retrying bool = false
 
+	var dialOpts []grpc.DialOption
+	dialOpts = []grpc.DialOption{
+		// grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(int(16 * datasize.MB))),
+		// grpc.WithKeepaliveParams(keepalive.ClientParameters{}),
+	}
+	dialOpts = append(dialOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
 	err := retry.Do(
 		func() error {
 			var err error
 			// TODO: Set dial options [?]
-			conn, err = grpc.Dial(addr)
+			conn, err = grpc.Dial(addr, dialOpts...)
 			utils.LogErrorWhileRetrying("failed to get grpc connection", err, &retrying, logger)
 			return err
 		},
