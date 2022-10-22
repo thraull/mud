@@ -13,12 +13,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func NewP2PClientDirect(config *relay.P2PRelayServerConfig, ethClient *ethclient.Client, logger *zap.Logger) *P2PClientDirect {
+func NewP2PRelayClientDirect(config *relay.P2PRelayServerConfig, ethClient *ethclient.Client, logger *zap.Logger) *P2PRelayClientDirect {
 	server := createP2PRelayServer(logger, ethClient, config)
-	return &P2PClientDirect{server: server}
+	return &P2PRelayClientDirect{server: server}
 }
 
-func NewP2PClientRemote(addr string, logger *zap.Logger) *P2PClientRemote {
+func NewP2PRelayClientRemote(addr string, logger *zap.Logger) *P2PRelayClientRemote {
 	// TODO: Set dial options
 	conn, err := grpc.Dial(addr)
 	if err != nil {
@@ -26,30 +26,30 @@ func NewP2PClientRemote(addr string, logger *zap.Logger) *P2PClientRemote {
 		return nil
 	}
 	client := pb_relay.NewP2PRelayServiceClient(conn)
-	return &P2PClientRemote{client: client}
+	return &P2PRelayClientRemote{client: client}
 }
 
-var _ pb_relay.P2PRelayServiceClient = (*P2PClientRemote)(nil)
-var _ pb_relay.P2PRelayServiceClient = (*P2PClientDirect)(nil)
+var _ pb_relay.P2PRelayServiceClient = (*P2PRelayClientRemote)(nil)
+var _ pb_relay.P2PRelayServiceClient = (*P2PRelayClientDirect)(nil)
 
 // **** Remote client ****
 
-type P2PClientRemote struct {
+type P2PRelayClientRemote struct {
 	client pb_relay.P2PRelayServiceClient
 }
 
-func (client *P2PClientRemote) OpenStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (pb_relay.P2PRelayService_OpenStreamClient, error) {
+func (client *P2PRelayClientRemote) OpenStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (pb_relay.P2PRelayService_OpenStreamClient, error) {
 	return client.client.OpenStream(ctx, in, opts...)
 }
 
-func (client *P2PClientRemote) PushStream(ctx context.Context, opts ...grpc.CallOption) (pb_relay.P2PRelayService_PushStreamClient, error) {
+func (client *P2PRelayClientRemote) PushStream(ctx context.Context, opts ...grpc.CallOption) (pb_relay.P2PRelayService_PushStreamClient, error) {
 	return client.client.PushStream(ctx, opts...)
 }
 
 // **** Direct client ****
 // For every RPC, implement server and client-side streams and link them with a channel.
 
-type P2PClientDirect struct {
+type P2PRelayClientDirect struct {
 	server pb_relay.P2PRelayServiceServer
 }
 
@@ -68,45 +68,45 @@ type EmptyReply struct {
 // Server-side stream for OpenStream (server -> client)
 
 type P2POpenStreamStreamServer struct {
-	ch  chan *PushRequestReply
-	ctx context.Context
+	scCh chan *PushRequestReply
+	ctx  context.Context
 	grpc.ServerStream
 }
 
-func (s *P2POpenStreamStreamServer) Send(m *pb_relay.PushRequest) error {
-	s.ch <- &PushRequestReply{r: m}
+func (srv *P2POpenStreamStreamServer) Send(m *pb_relay.PushRequest) error {
+	srv.scCh <- &PushRequestReply{r: m}
 	return nil
 }
 
-func (s *P2POpenStreamStreamServer) Context() context.Context { return s.ctx }
+func (srv *P2POpenStreamStreamServer) Context() context.Context { return srv.ctx }
 
-func (s *P2POpenStreamStreamServer) Err(err error) {
+func (srv *P2POpenStreamStreamServer) Err(err error) {
 	if err == nil {
 		return
 	}
-	s.ch <- &PushRequestReply{err: err}
+	srv.scCh <- &PushRequestReply{err: err}
 }
 
 // Client-side stream for OpenStream (server -> client)
 
 type P2POpenStreamStreamClient struct {
-	ch  chan *PushRequestReply
-	ctx context.Context
+	scCh chan *PushRequestReply
+	ctx  context.Context
 	grpc.ClientStream
 }
 
-func (c *P2POpenStreamStreamClient) Recv() (*pb_relay.PushRequest, error) {
-	m, ok := <-c.ch
+func (cli *P2POpenStreamStreamClient) Recv() (*pb_relay.PushRequest, error) {
+	m, ok := <-cli.scCh
 	if !ok || m == nil {
 		return nil, io.EOF
 	}
 	return m.r, m.err
 }
 
-func (c *P2POpenStreamStreamClient) Context() context.Context { return c.ctx }
+func (cli *P2POpenStreamStreamClient) Context() context.Context { return cli.ctx }
 
-func (c *P2POpenStreamStreamClient) RecvMsg(anyMessage interface{}) error {
-	m, err := c.Recv()
+func (cli *P2POpenStreamStreamClient) RecvMsg(anyMessage interface{}) error {
+	m, err := cli.Recv()
 	if err != nil {
 		return err
 	}
@@ -117,15 +117,15 @@ func (c *P2POpenStreamStreamClient) RecvMsg(anyMessage interface{}) error {
 
 // Direct client for OpenStream
 
-func (client *P2PClientDirect) OpenStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (pb_relay.P2PRelayService_OpenStreamClient, error) {
-	// 16384 = 2^14. This is what erigon has hard-coded.
-	ch := make(chan *PushRequestReply, 16384)
-	streamServer := &P2POpenStreamStreamServer{ch: ch, ctx: ctx}
+func (client *P2PRelayClientDirect) OpenStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (pb_relay.P2PRelayService_OpenStreamClient, error) {
+	// 16384 = 2^14 (copied from Erigon hard-code).
+	scCh := make(chan *PushRequestReply, 16384)
+	streamServer := &P2POpenStreamStreamServer{scCh: scCh, ctx: ctx}
 	go func() {
-		defer close(ch)
+		defer close(scCh)
 		streamServer.Err(client.server.OpenStream(in, streamServer))
 	}()
-	return &P2POpenStreamStreamClient{ch: ch, ctx: ctx}, nil
+	return &P2POpenStreamStreamClient{scCh: scCh, ctx: ctx}, nil
 }
 
 // PUSH_STREAM [ CLIENT -> SERVER ]
@@ -139,18 +139,18 @@ type P2PPushStreamStreamServer struct {
 	grpc.ServerStream
 }
 
-func (s *P2PPushStreamStreamServer) Recv() (*pb_relay.PushRequest, error) {
-	m, ok := <-s.csCh
+func (srv *P2PPushStreamStreamServer) Recv() (*pb_relay.PushRequest, error) {
+	m, ok := <-srv.csCh
 	if !ok || m == nil {
 		return nil, io.EOF
 	}
 	return m.r, m.err
 }
 
-func (s *P2PPushStreamStreamServer) Context() context.Context { return s.ctx }
+func (srv *P2PPushStreamStreamServer) Context() context.Context { return srv.ctx }
 
-func (s *P2PPushStreamStreamServer) RecvMsg(anyMessage interface{}) error {
-	m, err := s.Recv()
+func (srv *P2PPushStreamStreamServer) RecvMsg(anyMessage interface{}) error {
+	m, err := srv.Recv()
 	if err != nil {
 		return err
 	}
@@ -159,8 +159,8 @@ func (s *P2PPushStreamStreamServer) RecvMsg(anyMessage interface{}) error {
 	return nil
 }
 
-func (s *P2PPushStreamStreamServer) SendAndClose(m *emptypb.Empty) error {
-	s.scCh <- &EmptyReply{r: m}
+func (srv *P2PPushStreamStreamServer) SendAndClose(m *emptypb.Empty) error {
+	srv.scCh <- &EmptyReply{r: m}
 	return nil
 }
 
@@ -173,29 +173,29 @@ type P2PPushStreamStreamClient struct {
 	grpc.ClientStream
 }
 
-func (c *P2PPushStreamStreamClient) Send(m *pb_relay.PushRequest) error {
-	c.csCh <- &PushRequestReply{r: m}
+func (cli *P2PPushStreamStreamClient) Send(m *pb_relay.PushRequest) error {
+	cli.csCh <- &PushRequestReply{r: m}
 	return nil
 }
 
-func (c *P2PPushStreamStreamClient) Context() context.Context { return c.ctx }
+func (cli *P2PPushStreamStreamClient) Context() context.Context { return cli.ctx }
 
-func (c *P2PPushStreamStreamClient) Err(err error) {
+func (cli *P2PPushStreamStreamClient) Err(err error) {
 	if err == nil {
 		return
 	}
-	c.csCh <- &PushRequestReply{err: err}
+	cli.csCh <- &PushRequestReply{err: err}
 }
 
-func (c *P2PPushStreamStreamClient) CloseAndRecv() (*emptypb.Empty, error) {
-	c.Err(io.EOF)
-	m := <-c.scCh
+func (cli *P2PPushStreamStreamClient) CloseAndRecv() (*emptypb.Empty, error) {
+	cli.Err(io.EOF)
+	m := <-cli.scCh
 	return m.r, m.err
 }
 
 // Direct client for PushStream
 
-func (client *P2PClientDirect) PushStream(ctx context.Context, opts ...grpc.CallOption) (pb_relay.P2PRelayService_PushStreamClient, error) {
+func (client *P2PRelayClientDirect) PushStream(ctx context.Context, opts ...grpc.CallOption) (pb_relay.P2PRelayService_PushStreamClient, error) {
 	csCh := make(chan *PushRequestReply, 16384)
 	scCh := make(chan *EmptyReply)
 	streamServer := &P2PPushStreamStreamServer{csCh: csCh, scCh: scCh, ctx: ctx}
