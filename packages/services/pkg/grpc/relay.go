@@ -42,14 +42,16 @@ func (server *ecsRelayServer) Init() {
 
 	if server.config.UseP2P {
 		// Open p2p read stream.
+		ctx := context.Background()
 		in := new(emptypb.Empty)
-		recvStream, err := server.p2pClient.OpenStream(context.Background(), in)
+		recvStream, err := server.p2pClient.OpenStream(ctx, in)
 		if err != nil {
 			server.logger.Fatal("error opening read stream from p2p", zap.Error(err))
 		}
 
 		// Open p2p write stream.
-		sendStream, err := server.p2pClient.PushStream(context.Background())
+		ctx = context.Background()
+		sendStream, err := server.p2pClient.PushStream(ctx)
 		if err != nil {
 			server.logger.Fatal("error opening write stream from p2p", zap.Error(err))
 		}
