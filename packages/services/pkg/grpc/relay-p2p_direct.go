@@ -66,6 +66,7 @@ func (srv *p2POpenStreamStreamServer) Err(err error) {
 		return
 	}
 	srv.scCh <- &pushRequestReply{err: err}
+	return
 }
 
 // Client-side stream for OpenStream (server -> client)
@@ -166,6 +167,7 @@ func (cli *p2PPushStreamStreamClient) Err(err error) {
 		return
 	}
 	cli.csCh <- &pushRequestReply{err: err}
+	return
 }
 
 func (cli *p2PPushStreamStreamClient) CloseAndRecv() (*emptypb.Empty, error) {
