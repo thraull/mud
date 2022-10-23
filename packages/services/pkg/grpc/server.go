@@ -6,6 +6,7 @@ import (
 	"latticexyz/mud/packages/services/pkg/faucet"
 	multiplexer "latticexyz/mud/packages/services/pkg/multiplexer"
 	"latticexyz/mud/packages/services/pkg/relay"
+	"latticexyz/mud/packages/services/pkg/relayp2p"
 	"latticexyz/mud/packages/services/pkg/snapshot"
 	pb_relay "latticexyz/mud/packages/services/protobuf/go/ecs-relay"
 	pb_snapshot "latticexyz/mud/packages/services/protobuf/go/ecs-snapshot"
@@ -181,7 +182,7 @@ func StartRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client
 	startHTTPServer(createWebGrpcServerWithWebsockets(grpcServer), grpcPort+1, logger)
 }
 
-func StartP2PRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, nodep2p host.Host, config *relay.P2PRelayServerConfig, logger *zap.Logger) {
+func StartP2PRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, nodep2p host.Host, config *relayp2p.P2PRelayServerConfig, logger *zap.Logger) {
 	// Create gRPC server.
 	grpcServer := createGrpcServer()
 
@@ -251,13 +252,12 @@ func createRelayServer(logger *zap.Logger, ethClient *ethclient.Client, p2pClien
 	return server
 }
 
-func createP2PRelayServer(logger *zap.Logger, ethClient *ethclient.Client, nodep2p host.Host, config *relay.P2PRelayServerConfig) *p2PRelayServer {
+func createP2PRelayServer(logger *zap.Logger, ethClient *ethclient.Client, nodep2p host.Host, config *relayp2p.P2PRelayServerConfig) *p2PRelayServer {
 	server := &p2PRelayServer{
 		ethClient: ethClient,
 		nodep2p:   nodep2p,
 		config:    config,
 		logger:    logger,
-		loop:      make(chan *pb_relay.PushRequest),
 	}
 	server.Init()
 	return server

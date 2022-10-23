@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 )
@@ -129,14 +128,14 @@ func (registry *ClientRegistry) GetClients() []*Client {
 	return registry.clients
 }
 
-func GenerateRandomIdentifier() (string, error) {
-	timestamp, err := time.Now().MarshalBinary()
-	if err != nil {
-		logger.GetLogger().Error("cannot generate random identifier from current time")
-		return "", fmt.Errorf("cannot generated random identifier")
-	}
-	return crypto.Keccak256Hash(timestamp).Hex(), nil
-}
+// func GenerateRandomIdentifier() (string, error) {
+// 	timestamp, err := time.Now().MarshalBinary()
+// 	if err != nil {
+// 		logger.GetLogger().Error("cannot generate random identifier from current time")
+// 		return "", fmt.Errorf("cannot generated random identifier")
+// 	}
+// 	return crypto.Keccak256Hash(timestamp).Hex(), nil
+// }
 
 func (registry *ClientRegistry) GetClientFromIdentity(identity *pb.Identity) (*Client, error) {
 	registry.mutex.Lock()

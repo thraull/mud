@@ -6,6 +6,7 @@ replace github.com/ethereum/go-ethereum v1.10.21 => github.com/ethereum-optimism
 
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/deckarep/golang-set v1.8.0
 	github.com/dghubble/go-twitter v0.0.0-20220816163853-8a0df96f1e6d
 	github.com/ethereum/go-ethereum v1.10.21
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
@@ -30,7 +31,6 @@ require (
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/coreos/go-systemd/v22 v22.4.0 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
-	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dghubble/sling v1.4.0 // indirect

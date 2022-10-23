@@ -7,7 +7,7 @@ import (
 	"latticexyz/mud/packages/services/pkg/grpc"
 	"latticexyz/mud/packages/services/pkg/logger"
 	"latticexyz/mud/packages/services/pkg/nodep2p"
-	"latticexyz/mud/packages/services/pkg/relay"
+	"latticexyz/mud/packages/services/pkg/relayp2p"
 )
 
 var (
@@ -31,7 +31,7 @@ func main() {
 	logger := logger.GetLogger()
 	defer logger.Sync()
 
-	config := &relay.P2PRelayServerConfig{
+	config := &relayp2p.P2PRelayServerConfig{
 		MessageDriftTime:       *messageDriftTime,
 		MinAccountBalance:      *minAccountBalance,
 		VerifyMessageSignature: *verifyMessageSignature,

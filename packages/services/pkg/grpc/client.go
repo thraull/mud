@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"latticexyz/mud/packages/services/pkg/relay"
+	"latticexyz/mud/packages/services/pkg/relayp2p"
 	"latticexyz/mud/packages/services/pkg/utils"
 	pb_relay "latticexyz/mud/packages/services/protobuf/go/ecs-relay"
 
@@ -43,7 +43,7 @@ func getGrpcConnection(addr string, logger *zap.Logger) *grpc.ClientConn {
 	return conn
 }
 
-func NewP2PRelayClientDirect(config *relay.P2PRelayServerConfig, ethClient *ethclient.Client, nodep2p host.Host, logger *zap.Logger) *p2PRelayClientDirect {
+func NewP2PRelayClientDirect(config *relayp2p.P2PRelayServerConfig, ethClient *ethclient.Client, nodep2p host.Host, logger *zap.Logger) *p2PRelayClientDirect {
 	server := createP2PRelayServer(logger, ethClient, nodep2p, config)
 	return &p2PRelayClientDirect{server: server}
 }

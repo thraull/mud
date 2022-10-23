@@ -8,6 +8,7 @@ import (
 	"latticexyz/mud/packages/services/pkg/logger"
 	"latticexyz/mud/packages/services/pkg/nodep2p"
 	"latticexyz/mud/packages/services/pkg/relay"
+	"latticexyz/mud/packages/services/pkg/relayp2p"
 
 	pb "latticexyz/mud/packages/services/protobuf/go/ecs-relay"
 )
@@ -67,7 +68,7 @@ func main() {
 	} else {
 		// Run and connect to an internal p2p relay node
 		nodep2p := nodep2p.NewP2PNode(*p2pPort, *p2pSeed)
-		p2pConfig := &relay.P2PRelayServerConfig{
+		p2pConfig := &relayp2p.P2PRelayServerConfig{
 			MessageDriftTime:       *messsageDriftTime,
 			MinAccountBalance:      *minAccountBalance,
 			VerifyMessageSignature: *verifyMessageSignature,
