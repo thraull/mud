@@ -14,6 +14,8 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/libp2p/go-libp2p/core/host"
+
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/ethereum/go-ethereum/ethclient"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -179,11 +181,11 @@ func StartRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client
 	startHTTPServer(createWebGrpcServerWithWebsockets(grpcServer), grpcPort+1, logger)
 }
 
-func StartP2PRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, config *relay.P2PRelayServerConfig, logger *zap.Logger) {
+func StartP2PRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, nodep2p host.Host, config *relay.P2PRelayServerConfig, logger *zap.Logger) {
 	// Create gRPC server.
 	grpcServer := createGrpcServer()
 
-	relayP2PServer := createP2PRelayServer(logger, ethClient, config)
+	relayP2PServer := createP2PRelayServer(logger, ethClient, nodep2p, config)
 
 	// Create and register relay service server.
 	pb_relay.RegisterP2PRelayServiceServer(grpcServer, relayP2PServer)
@@ -249,9 +251,10 @@ func createRelayServer(logger *zap.Logger, ethClient *ethclient.Client, p2pClien
 	return server
 }
 
-func createP2PRelayServer(logger *zap.Logger, ethClient *ethclient.Client, config *relay.P2PRelayServerConfig) *p2PRelayServer {
+func createP2PRelayServer(logger *zap.Logger, ethClient *ethclient.Client, nodep2p host.Host, config *relay.P2PRelayServerConfig) *p2PRelayServer {
 	server := &p2PRelayServer{
 		ethClient: ethClient,
+		nodep2p:   nodep2p,
 		config:    config,
 		logger:    logger,
 		loop:      make(chan *pb_relay.PushRequest),

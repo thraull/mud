@@ -7,6 +7,7 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/libp2p/go-libp2p/core/host"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -42,8 +43,8 @@ func getGrpcConnection(addr string, logger *zap.Logger) *grpc.ClientConn {
 	return conn
 }
 
-func NewP2PRelayClientDirect(config *relay.P2PRelayServerConfig, ethClient *ethclient.Client, logger *zap.Logger) *p2PRelayClientDirect {
-	server := createP2PRelayServer(logger, ethClient, config)
+func NewP2PRelayClientDirect(config *relay.P2PRelayServerConfig, ethClient *ethclient.Client, nodep2p host.Host, logger *zap.Logger) *p2PRelayClientDirect {
+	server := createP2PRelayServer(logger, ethClient, nodep2p, config)
 	return &p2PRelayClientDirect{server: server}
 }
 
