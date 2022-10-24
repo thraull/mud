@@ -243,7 +243,7 @@ func (registry *PeerRegistry) AddPeer(id *libp2p_peer.ID, config *P2PRelayServer
 	return newPeer
 }
 
-func (registry *PeerRegistry) Unregister(id *libp2p_peer.ID) error {
+func (registry *PeerRegistry) RemovePeer(id *libp2p_peer.ID) error {
 	registry.mutex.Lock()
 	for index, peer := range registry.peers {
 		if peer.id == id {

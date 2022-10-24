@@ -102,6 +102,92 @@ func (server *p2PRelayServer) PushStream(stream pb.P2PRelayService_PushStreamSer
 	return err
 }
 
+// TODO: Reputation system, give more compute to valuable peers
+
+func (server *p2PRelayServer) P2PStreamHandler(stream network.Stream) {
+	err := server.HandlePeerStream(stream)
+	if err != nil {
+		server.logger.Info("error handling p2p stream", zap.Error(err))
+		stream.Reset()
+	} else {
+		stream.Close()
+	}
+}
+
+func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
+	peerId := stream.Conn().RemotePeer()
+	allowed := server.AllowPeer(&peerId)
+	if !allowed {
+		return fmt.Errorf("peer is blocked")
+	}
+	_, exists := server.PeerRegistry.GetPeerFromId(&peerId)
+	if exists {
+		return fmt.Errorf("peer already has an open stream")
+	}
+	peer := server.PeerRegistry.AddPeer(&peerId, server.config)
+	server.logger.Info("received new p2p stream")
+	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+	prw := &nodep2p.ProtoStream{RW: rw}
+	// TODO: use context [?]
+	go server.PeerSendWorker(peer, prw)
+	return server.PeerRecvWorker(peer, prw)
+}
+
+func (server *p2PRelayServer) PeerRecvWorker(peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
+	for {
+		data, err := prw.Read()
+		if err != nil {
+			return err
+		}
+		request := &pb.PushRequest{}
+		err = proto.Unmarshal(data, request)
+		if err != nil {
+			return err
+		}
+		err = server.HandlePeerPushRequest(request, peer)
+		if err != nil {
+			return err
+		}
+		// Error rate limit then disconnect [?]
+	}
+}
+
+func (server *p2PRelayServer) PeerSendWorker(peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
+	propagatedRequestsChannel := peer.GetChannel()
+	for {
+		propRequest := <-propagatedRequestsChannel
+		if propRequest == nil {
+			server.logger.Warn("propagated message is nil")
+		} else {
+			data, err := proto.Marshal(propRequest)
+			if err != nil {
+				return err
+			}
+			prw.Write(data)
+		}
+	}
+}
+
+func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest, peer *relayp2p.Peer) error {
+	shouldPropagate, err := server.ShouldPropagate(request)
+	if !shouldPropagate || err != nil {
+		return err
+	}
+	server.Client.Propagate(request, "")
+	server.PeerRegistry.Propagate(request, peer.GetId())
+	return nil
+}
+
+func (server *p2PRelayServer) HandleClientPushRequest(request *pb.PushRequest) error {
+	shouldPropagate, err := server.ShouldPropagate(request)
+	if !shouldPropagate || err != nil {
+		return err
+	}
+	var zeroPeerId *libp2p_peer.ID
+	server.PeerRegistry.Propagate(request, zeroPeerId)
+	return nil
+}
+
 // TODO: move these functions to avoid repetition with relay.
 
 func (server *p2PRelayServer) EncodeMessage(message *pb.Message) string {
@@ -203,92 +289,6 @@ func (server *p2PRelayServer) VerifySufficientBalance(signer *relayp2p.Signer, a
 
 func (server *p2PRelayServer) AllowPeer(id *libp2p_peer.ID) bool {
 	return true
-}
-
-// TODO: Reputation system, give more compute to valuable peers
-
-func (server *p2PRelayServer) P2PStreamHandler(stream network.Stream) {
-	err := server.HandlePeerStream(stream)
-	if err != nil {
-		server.logger.Info("error handling p2p stream", zap.Error(err))
-		stream.Reset()
-	} else {
-		stream.Close()
-	}
-}
-
-func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
-	peerId := stream.Conn().RemotePeer()
-	allowed := server.AllowPeer(&peerId)
-	if !allowed {
-		return fmt.Errorf("peer is blocked")
-	}
-	_, exists := server.PeerRegistry.GetPeerFromId(&peerId)
-	if exists {
-		return fmt.Errorf("peer already has an open stream")
-	}
-	peer := server.PeerRegistry.AddPeer(&peerId, server.config)
-	server.logger.Info("received new p2p stream")
-	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-	prw := &nodep2p.ProtoStream{RW: rw}
-	// TODO: use context [?]
-	go server.PeerSendWorker(peer, prw)
-	return server.PeerRecvWorker(peer, prw)
-}
-
-func (server *p2PRelayServer) PeerRecvWorker(peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
-	for {
-		data, err := prw.Read()
-		if err != nil {
-			return err
-		}
-		request := &pb.PushRequest{}
-		err = proto.Unmarshal(data, request)
-		if err != nil {
-			return err
-		}
-		err = server.HandlePeerPushRequest(request, peer)
-		if err != nil {
-			return err
-		}
-		// Error rate limit then disconnect [?]
-	}
-}
-
-func (server *p2PRelayServer) PeerSendWorker(peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
-	propagatedRequestsChannel := peer.GetChannel()
-	for {
-		propRequest := <-propagatedRequestsChannel
-		if propRequest == nil {
-			server.logger.Warn("propagated message is nil")
-		} else {
-			data, err := proto.Marshal(propRequest)
-			if err != nil {
-				return err
-			}
-			prw.Write(data)
-		}
-	}
-}
-
-func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest, peer *relayp2p.Peer) error {
-	shouldPropagate, err := server.ShouldPropagate(request)
-	if !shouldPropagate || err != nil {
-		return err
-	}
-	server.Client.Propagate(request, "")
-	server.PeerRegistry.Propagate(request, peer.GetId())
-	return nil
-}
-
-func (server *p2PRelayServer) HandleClientPushRequest(request *pb.PushRequest) error {
-	shouldPropagate, err := server.ShouldPropagate(request)
-	if !shouldPropagate || err != nil {
-		return err
-	}
-	var zeroPeerId *libp2p_peer.ID
-	server.PeerRegistry.Propagate(request, zeroPeerId)
-	return nil
 }
 
 func (server *p2PRelayServer) ShouldPropagate(request *pb.PushRequest) (bool, error) {
