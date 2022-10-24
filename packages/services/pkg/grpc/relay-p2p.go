@@ -16,6 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
+	libp2p_peer "github.com/libp2p/go-libp2p/core/peer"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -24,8 +25,9 @@ import (
 type p2PRelayServer struct {
 	pb.UnimplementedP2PRelayServiceServer
 	relayp2p.SignerRegistry
-	relayp2p.ClientRegistry
 	relayp2p.PeerRegistry
+	// Support a single relay client
+	relayp2p.Client
 
 	ethClient     *ethclient.Client
 	nodep2p       host.Host
@@ -35,53 +37,72 @@ type p2PRelayServer struct {
 }
 
 func (server *p2PRelayServer) Init() {
-	// TODO: do the math on cache size
+	// TODO: do the math on cache size (and vs. BloomFilter).
+	// Init the cache of known message hashes.
 	server.knownMessages = utils.NewKnownCache(1048576)
-	// Set up the stream handler
+	// Set up the stream handler.
 	server.nodep2p.SetStreamHandler("/relay/0.1.0", server.P2PStreamHandler)
 }
 
+// Opened by relay clients to get data streamed back.
 func (server *p2PRelayServer) OpenStream(_ *emptypb.Empty, stream pb.P2PRelayService_OpenStreamServer) error {
-	id, err := utils.GenerateRandomIdentifier()
+	err := server.Client.ConnectOpenStream()
 	if err != nil {
 		return err
 	}
-	client := server.ClientRegistry.NewClient(id, server.config)
-	relayedMessagesChannel := client.GetChannel()
-	for {
+	// Stream propagated data to the client stream
+	propagatedRequestsChannel := server.Client.GetChannel()
+	cont := true
+	for cont {
 		select {
 		case <-stream.Context().Done():
-			server.logger.Info("client closed stream")
-			server.ClientRegistry.RemoveClient(client.GetId())
-			return nil
-		case relayedMessage := <-relayedMessagesChannel:
-			if relayedMessage == nil {
-				server.logger.Warn("relayed message is nil")
-			} else {
-				stream.Send(relayedMessage)
+			cont = false
+		case relayedMessage := <-propagatedRequestsChannel:
+			err = stream.Send(relayedMessage)
+			if err != nil {
+				cont = false
 			}
 		}
 	}
-	return nil
+	// Mark client as disconnected
+	server.Client.DisconnectOpenStream()
+	if err != nil {
+		server.logger.Info("error handling relay client stream", zap.Error(err))
+	}
+	return err
 }
 
+// Opened by relay clients to stream data into the node.
 func (server *p2PRelayServer) PushStream(stream pb.P2PRelayService_PushStreamServer) error {
+	err := server.Client.ConnectPushStream()
+	if err != nil {
+		return err
+	}
 	// Continuously receive message relay requests and handle them.
 	for {
 		// Receive request message from input stream.
 		request, err := stream.Recv()
-
 		if err == io.EOF {
 			m := new(emptypb.Empty)
 			stream.SendAndClose(m)
-			return nil
+			break
+		} else if err != nil {
+			break
 		}
+		err = server.HandleClientPushRequest(request)
 		if err != nil {
-			return err
+			server.logger.Info("error handling relay client push request", zap.Error(err))
 		}
-
 	}
+	// Mark client as disconnected
+	server.Client.DisconnectPushStream()
+	if err != nil {
+		server.logger.Info("error handling relay client stream", zap.Error(err))
+	}
+	return err
 }
+
+// TODO: move these functions to avoid repetition with relay.
 
 func (server *p2PRelayServer) EncodeMessage(message *pb.Message) string {
 	return fmt.Sprintf("(%d,%s,%s,%d)", message.Version, message.Id, crypto.Keccak256Hash(message.Data).Hex(), message.Timestamp)
@@ -91,6 +112,14 @@ func (server *p2PRelayServer) HashMessage(message *pb.Message) []byte {
 	messagePacked := server.EncodeMessage(message)
 	hash := accounts.TextHash([]byte(messagePacked))
 	return hash
+}
+
+func (server *p2PRelayServer) IsKnownMessage(msgHash []byte) bool {
+	return server.knownMessages.Contains(msgHash)
+}
+
+func (server *p2PRelayServer) MarkMessage(msgHash []byte) {
+	server.knownMessages.Add(msgHash)
 }
 
 func (server *p2PRelayServer) VerifyMessageSignature(message *pb.Message, identity *pb.Identity) (bool, string, error) {
@@ -172,16 +201,13 @@ func (server *p2PRelayServer) VerifySufficientBalance(signer *relayp2p.Signer, a
 	return nil
 }
 
-func (server *p2PRelayServer) IsKnownMessage(msgHash []byte) bool {
-	return server.knownMessages.Contains(msgHash)
+func (server *p2PRelayServer) AllowPeer(id *libp2p_peer.ID) bool {
+	return true
 }
 
-func (server *p2PRelayServer) MarkMessage(msgHash []byte) {
-	server.knownMessages.Add(msgHash)
-}
+// TODO: Reputation system, give more compute to valuable peers
 
 func (server *p2PRelayServer) P2PStreamHandler(stream network.Stream) {
-	server.logger.Info("received new p2p stream")
 	err := server.HandlePeerStream(stream)
 	if err != nil {
 		server.logger.Info("error handling p2p stream", zap.Error(err))
@@ -189,6 +215,25 @@ func (server *p2PRelayServer) P2PStreamHandler(stream network.Stream) {
 	} else {
 		stream.Close()
 	}
+}
+
+func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
+	peerId := stream.Conn().RemotePeer()
+	allowed := server.AllowPeer(&peerId)
+	if !allowed {
+		return fmt.Errorf("peer is blocked")
+	}
+	_, exists := server.PeerRegistry.GetPeerFromId(&peerId)
+	if exists {
+		return fmt.Errorf("peer already has an open stream")
+	}
+	peer := server.PeerRegistry.AddPeer(&peerId, server.config)
+	server.logger.Info("received new p2p stream")
+	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+	prw := &nodep2p.ProtoStream{RW: rw}
+	// TODO: use context [?]
+	go server.PeerSendWorker(peer, prw)
+	return server.PeerRecvWorker(peer, prw)
 }
 
 func (server *p2PRelayServer) PeerRecvWorker(peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
@@ -202,7 +247,7 @@ func (server *p2PRelayServer) PeerRecvWorker(peer *relayp2p.Peer, prw *nodep2p.P
 		if err != nil {
 			return err
 		}
-		err = server.HandlePeerPushRequest(request)
+		err = server.HandlePeerPushRequest(request, peer)
 		if err != nil {
 			return err
 		}
@@ -224,32 +269,43 @@ func (server *p2PRelayServer) PeerSendWorker(peer *relayp2p.Peer, prw *nodep2p.P
 			prw.Write(data)
 		}
 	}
+}
+
+func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest, peer *relayp2p.Peer) error {
+	shouldPropagate, err := server.ShouldPropagate(request)
+	if !shouldPropagate || err != nil {
+		return err
+	}
+	server.Client.Propagate(request, "")
+	server.PeerRegistry.Propagate(request, peer.GetId())
 	return nil
 }
 
-func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
-	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-	prw := &nodep2p.ProtoStream{RW: rw}
-	// TODO: use context [?]
-	go server.PeerSendWorker(nil, prw)
-	return server.PeerRecvWorker(nil, prw)
+func (server *p2PRelayServer) HandleClientPushRequest(request *pb.PushRequest) error {
+	shouldPropagate, err := server.ShouldPropagate(request)
+	if !shouldPropagate || err != nil {
+		return err
+	}
+	var zeroPeerId *libp2p_peer.ID
+	server.PeerRegistry.Propagate(request, zeroPeerId)
+	return nil
 }
 
-func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest) error {
+func (server *p2PRelayServer) ShouldPropagate(request *pb.PushRequest) (bool, error) {
 	message := request.Message
 	msgHash := server.HashMessage(request.Message)
 
 	if server.IsKnownMessage(msgHash) {
-		return nil
+		return false, nil
 	} else {
 		server.MarkMessage(msgHash)
 	}
 
 	// When pushing a single message, we recover the sender from the message signature, which has
 	// different format then identity signature.
-	_, recoveredAddress, err := server.VerifyMessageSignature(request.Message, nil)
+	_, recoveredAddress, err := server.VerifyMessageSignature(message, nil)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	// Create an identity object from the address that signed the message.
@@ -269,7 +325,7 @@ func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest) err
 	err = server.VerifySufficientBalance(signer, recoveredAddress)
 	if err != nil {
 		server.logger.Warn("signer balance verification failed", zap.Error(err))
-		return nil
+		return false, nil
 	}
 
 	// Rate limit the signer, if necessary.
@@ -281,14 +337,11 @@ func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest) err
 	// Verify that the message is OK to relayp2p.
 	err = server.VerifyMessage(message, identity)
 	if err != nil {
-		return err
+		return false, err
 	}
-
-	// Propagate the message.
-	// propagate.
 
 	// Update the ping timer on the signer since the signer has just pushed a valid message.
 	signer.Ping()
 
-	return nil
+	return true, nil
 }
