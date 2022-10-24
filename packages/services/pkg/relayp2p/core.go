@@ -114,7 +114,7 @@ func (registry *SignerRegistry) Unregister(identity *pb.Identity) error {
 		}
 	}
 	registry.mutex.Unlock()
-	return fmt.Errorf("signer not registered")
+	return fmt.Errorf("signer identity.Name=%s not registered", identity.Name)
 }
 
 // Relay server connected to the p2p
@@ -253,7 +253,7 @@ func (registry *PeerRegistry) RemovePeer(id *libp2p_peer.ID) error {
 		}
 	}
 	registry.mutex.Unlock()
-	return fmt.Errorf("peer not registered")
+	return fmt.Errorf("peer id=%s not registered", id.ShortString())
 }
 
 func (registry *PeerRegistry) Propagate(request *pb.PushRequest, origin *libp2p_peer.ID) {
