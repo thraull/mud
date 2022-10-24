@@ -38,7 +38,9 @@ func (stream *ProtoStream) Write(data []byte) error {
 	sizeBytes := make([]byte, 2)
 	binary.BigEndian.PutUint64(sizeBytes, uint64(size))
 	// Write data size and data to buffer
-	stream.RW.Write(append(sizeBytes, data...))
-
+	_, err := stream.RW.Write(append(sizeBytes, data...))
+	if err != nil {
+		return err
+	}
 	return nil
 }

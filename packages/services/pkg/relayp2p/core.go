@@ -194,7 +194,7 @@ func (client *Client) Propagate(request *pb.PushRequest, origin string) {
 }
 
 type Peer struct {
-	id      *libp2p_peer.ID
+	id      libp2p_peer.ID
 	channel chan *pb.PushRequest
 	mutex   sync.Mutex
 	// Rate limiting
@@ -204,7 +204,7 @@ func (peer *Peer) GetChannel() chan *pb.PushRequest {
 	return peer.channel
 }
 
-func (peer *Peer) GetId() *libp2p_peer.ID {
+func (peer *Peer) GetId() libp2p_peer.ID {
 	return peer.id
 }
 
@@ -221,7 +221,7 @@ func (registry *PeerRegistry) GetPeers() []*Peer {
 	return registry.peers
 }
 
-func (registry *PeerRegistry) GetPeerFromId(id *libp2p_peer.ID) (*Peer, bool) {
+func (registry *PeerRegistry) GetPeerFromId(id libp2p_peer.ID) (*Peer, bool) {
 	registry.mutex.Lock()
 	for _, peer := range registry.peers {
 		if peer.id == id {
@@ -233,7 +233,7 @@ func (registry *PeerRegistry) GetPeerFromId(id *libp2p_peer.ID) (*Peer, bool) {
 	return nil, false
 }
 
-func (registry *PeerRegistry) AddPeer(id *libp2p_peer.ID, config *P2PRelayServerConfig) *Peer {
+func (registry *PeerRegistry) AddPeer(id libp2p_peer.ID, config *P2PRelayServerConfig) *Peer {
 	registry.mutex.Lock()
 	newPeer := new(Peer)
 	newPeer.id = id
@@ -243,7 +243,7 @@ func (registry *PeerRegistry) AddPeer(id *libp2p_peer.ID, config *P2PRelayServer
 	return newPeer
 }
 
-func (registry *PeerRegistry) RemovePeer(id *libp2p_peer.ID) error {
+func (registry *PeerRegistry) RemovePeer(id libp2p_peer.ID) error {
 	registry.mutex.Lock()
 	for index, peer := range registry.peers {
 		if peer.id == id {
@@ -256,7 +256,7 @@ func (registry *PeerRegistry) RemovePeer(id *libp2p_peer.ID) error {
 	return fmt.Errorf("peer id=%s not registered", id.ShortString())
 }
 
-func (registry *PeerRegistry) Propagate(request *pb.PushRequest, origin *libp2p_peer.ID) {
+func (registry *PeerRegistry) Propagate(request *pb.PushRequest, origin libp2p_peer.ID) {
 	registry.mutex.Lock()
 	for _, peer := range registry.peers {
 		// Only pipe to peers that are connected and not the peer which is the origin of

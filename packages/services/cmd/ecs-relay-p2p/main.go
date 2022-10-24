@@ -20,6 +20,7 @@ var (
 	metricsPort            = flag.Int("metrics-port", 6060, "Prometheus metrics http handler port. Defaults to port 6060")
 	p2pPort                = flag.Int("p2p-port", 35071, "P2P Node Port")
 	p2pSeed                = flag.Int64("p2p-seed", 0, "P2P Node Private Key Seed")
+	// idleDisconnectInterval
 )
 
 func main() {

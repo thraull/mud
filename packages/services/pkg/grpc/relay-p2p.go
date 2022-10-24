@@ -95,6 +95,7 @@ func (server *p2PRelayServer) PushStream(stream pb.P2PRelayService_PushStreamSer
 			server.logger.Info("error receiving push request from relay client", zap.Error(err))
 			return err
 		}
+		// TODO: disconnect if (errors/s)/(requests/s) exceeds limit.
 		err = server.HandleClientPushRequest(request)
 		if err != nil {
 			server.logger.Info("error handling push request from relay client", zap.Error(err))
@@ -119,18 +120,19 @@ func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
 	// Get and authorize peer.
 	// TODO: peerId typing and pointer-ing
 	peerId := stream.Conn().RemotePeer()
-	allowed := server.AllowPeer(&peerId)
+	allowed := server.AllowPeer(peerId)
 	if !allowed {
 		return fmt.Errorf("peer with id=%s is blocked", peerId.ShortString())
 	}
+	// TODO: use multiple streams per peer to mitigate head of the line blocking.
 	// Allow only one stream per peer.
-	_, exists := server.PeerRegistry.GetPeerFromId(&peerId)
+	_, exists := server.PeerRegistry.GetPeerFromId(peerId)
 	if exists {
 		return fmt.Errorf("peer with id=%s already has an open stream", peerId.ShortString())
 	}
 	// Add peer.
-	peer := server.PeerRegistry.AddPeer(&peerId, server.config)
-	defer server.PeerRegistry.RemovePeer(&peerId)
+	peer := server.PeerRegistry.AddPeer(peerId, server.config)
+	defer server.PeerRegistry.RemovePeer(peerId)
 	server.logger.Info("received new p2p stream", zap.String("peerId", peerId.ShortString()))
 
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
@@ -214,14 +216,14 @@ func (server *p2PRelayServer) HandleClientPushRequest(request *pb.PushRequest) e
 		return err
 	}
 	// Propagate to other peers.
-	var zeroPeerId *libp2p_peer.ID
+	var zeroPeerId libp2p_peer.ID
 	server.PeerRegistry.Propagate(request, zeroPeerId)
 	// Don't propagate to clients as we currently only support one, which is always
 	// the origin of the request.
 	return nil
 }
 
-func (server *p2PRelayServer) AllowPeer(id *libp2p_peer.ID) bool {
+func (server *p2PRelayServer) AllowPeer(id libp2p_peer.ID) bool {
 	return true
 }
 
