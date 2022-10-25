@@ -104,6 +104,19 @@ func (server *p2PRelayServer) PushStream(stream pb.P2PRelayService_PushStreamSer
 	}
 }
 
+func (server *p2PRelayServer) HandleClientPushRequest(request *pb.PushRequest) error {
+	shouldPropagate, err := server.ShouldPropagate(request)
+	if !shouldPropagate || err != nil {
+		return err
+	}
+	// Propagate to other peers.
+	var zeroPeerId libp2p_peer.ID
+	server.PeerRegistry.Propagate(request, zeroPeerId)
+	// Don't propagate to clients as we currently only support one, which is always
+	// the origin of the request.
+	return nil
+}
+
 // TODO: Reputation system, give more compute to valuable peers
 
 func (server *p2PRelayServer) P2PStreamHandler(stream network.Stream) {
@@ -207,19 +220,6 @@ func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest, pee
 	server.Client.Propagate(request, "")
 	// Propagate to peers.
 	server.PeerRegistry.Propagate(request, peer.GetId())
-	return nil
-}
-
-func (server *p2PRelayServer) HandleClientPushRequest(request *pb.PushRequest) error {
-	shouldPropagate, err := server.ShouldPropagate(request)
-	if !shouldPropagate || err != nil {
-		return err
-	}
-	// Propagate to other peers.
-	var zeroPeerId libp2p_peer.ID
-	server.PeerRegistry.Propagate(request, zeroPeerId)
-	// Don't propagate to clients as we currently only support one, which is always
-	// the origin of the request.
 	return nil
 }
 

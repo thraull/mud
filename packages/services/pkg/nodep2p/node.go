@@ -13,22 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-func generatePrivateKey(seed int64) (crypto.PrivKey, error) {
-	var r io.Reader
-	if seed == 0 {
-		r = rand.Reader
-	} else {
-		r = mrand.New(mrand.NewSource(seed))
-	}
-
-	priv, _, err := crypto.GenerateKeyPairWithReader(crypto.RSA, 2048, r)
-	if err != nil {
-		return nil, err
-	}
-
-	return priv, err
-}
-
 func NewP2PNode(listenPort int, seed int64) host.Host {
 	priv, err := generatePrivateKey(seed)
 	if err != nil {
@@ -45,4 +29,20 @@ func NewP2PNode(listenPort int, seed int64) host.Host {
 	}
 
 	return node
+}
+
+func generatePrivateKey(seed int64) (crypto.PrivKey, error) {
+	var r io.Reader
+	if seed == 0 {
+		r = rand.Reader
+	} else {
+		r = mrand.New(mrand.NewSource(seed))
+	}
+
+	priv, _, err := crypto.GenerateKeyPairWithReader(crypto.RSA, 2048, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return priv, err
 }
