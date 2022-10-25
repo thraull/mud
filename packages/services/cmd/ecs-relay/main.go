@@ -11,6 +11,8 @@ import (
 	"latticexyz/mud/packages/services/pkg/relayp2p"
 
 	pb "latticexyz/mud/packages/services/protobuf/go/ecs-relay"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var (
@@ -54,27 +56,29 @@ func main() {
 		VerifyP2PMessages:      *verifyP2PMessages,
 	}
 
-	// Get an instance of ethereum client.
-	ethClient := eth.GetEthereumClient(*wsUrl, logger)
+	var ethClient *ethclient.Client
+	if *verifyAccountBalance {
+		// Get an instance of ethereum client.
+		ethClient = eth.GetEthereumClient(*wsUrl, logger)
+	}
 
 	// Get an instance of p2p client.
 	var p2pClient pb.P2PRelayServiceClient
-	if !*useP2P {
-		// Don't use p2p
-		p2pClient = nil
-	} else if *externalP2PNode {
-		// Connect to an external p2p server.
-		p2pClient = grpc.NewP2PRelayClientRemote(*p2pAddress, logger)
-	} else {
-		// Run and connect to an internal p2p relay node
-		nodep2p := nodep2p.NewP2PNode(*p2pPort, *p2pSeed)
-		p2pConfig := &relayp2p.P2PRelayServerConfig{
-			MessageDriftTime:       *messsageDriftTime,
-			MinAccountBalance:      *minAccountBalance,
-			VerifyMessageSignature: *verifyMessageSignature,
-			VerifyAccountBalance:   *verifyAccountBalance,
+	if *useP2P {
+		if *externalP2PNode {
+			// Connect to an external p2p server.
+			p2pClient = grpc.NewP2PRelayClientRemote(*p2pAddress, logger)
+		} else {
+			// Run and connect to an internal p2p relay node
+			nodep2p := nodep2p.NewP2PNode(*p2pPort, *p2pSeed)
+			p2pConfig := &relayp2p.P2PRelayServerConfig{
+				MessageDriftTime:       *messsageDriftTime,
+				MinAccountBalance:      *minAccountBalance,
+				VerifyMessageSignature: *verifyMessageSignature,
+				VerifyAccountBalance:   *verifyAccountBalance,
+			}
+			p2pClient = grpc.NewP2PRelayClientDirect(p2pConfig, ethClient, nodep2p, logger)
 		}
-		p2pClient = grpc.NewP2PRelayClientDirect(p2pConfig, ethClient, nodep2p, logger)
 	}
 
 	// Start gRPC server and the relayer.

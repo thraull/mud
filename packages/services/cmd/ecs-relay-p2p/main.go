@@ -8,6 +8,8 @@ import (
 	"latticexyz/mud/packages/services/pkg/logger"
 	"latticexyz/mud/packages/services/pkg/nodep2p"
 	"latticexyz/mud/packages/services/pkg/relayp2p"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 var (
@@ -40,7 +42,11 @@ func main() {
 	}
 
 	// Get an instance of ethereum client.
-	ethClient := eth.GetEthereumClient(*wsUrl, logger)
+	var ethClient *ethclient.Client
+	if *verifyAccountBalance {
+		// Get an instance of ethereum client.
+		ethClient = eth.GetEthereumClient(*wsUrl, logger)
+	}
 
 	// Get an instance of p2p node
 	nodep2p := nodep2p.NewP2PNode(*p2pPort, *p2pSeed)
