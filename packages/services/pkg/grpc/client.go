@@ -1,13 +1,13 @@
 package grpc
 
 import (
+	"latticexyz/mud/packages/services/pkg/nodep2p"
 	"latticexyz/mud/packages/services/pkg/relayp2p"
 	"latticexyz/mud/packages/services/pkg/utils"
 	pb_relay "latticexyz/mud/packages/services/protobuf/go/ecs-relay"
 
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/libp2p/go-libp2p/core/host"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -43,8 +43,8 @@ func getGrpcConnection(addr string, logger *zap.Logger) *grpc.ClientConn {
 	return conn
 }
 
-func NewP2PRelayClientDirect(config *relayp2p.P2PRelayServerConfig, ethClient *ethclient.Client, nodep2p host.Host, logger *zap.Logger) *p2PRelayClientDirect {
-	server := createP2PRelayServer(logger, ethClient, nodep2p, config)
+func NewP2PRelayClientDirect(config *relayp2p.P2PRelayServerConfig, ethClient *ethclient.Client, p2pNode *nodep2p.Node, logger *zap.Logger) *p2PRelayClientDirect {
+	server := createP2PRelayServer(logger, ethClient, p2pNode, config)
 	return &p2PRelayClientDirect{server: server}
 }
 

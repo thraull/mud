@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"latticexyz/mud/packages/services/pkg/faucet"
 	multiplexer "latticexyz/mud/packages/services/pkg/multiplexer"
+	"latticexyz/mud/packages/services/pkg/nodep2p"
 	"latticexyz/mud/packages/services/pkg/relay"
 	"latticexyz/mud/packages/services/pkg/relayp2p"
 	"latticexyz/mud/packages/services/pkg/snapshot"
@@ -15,7 +16,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/libp2p/go-libp2p/core/host"
+	maddr "github.com/multiformats/go-multiaddr"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -182,11 +183,13 @@ func StartRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client
 	startHTTPServer(createWebGrpcServerWithWebsockets(grpcServer), grpcPort+1, logger)
 }
 
-func StartP2PRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, nodep2p host.Host, config *relayp2p.P2PRelayServerConfig, logger *zap.Logger) {
+func StartP2PRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Client, p2pNode *nodep2p.Node, p2pTarget maddr.Multiaddr, config *relayp2p.P2PRelayServerConfig, logger *zap.Logger) {
 	// Create gRPC server.
 	grpcServer := createGrpcServer()
 
-	relayP2PServer := createP2PRelayServer(logger, ethClient, nodep2p, config)
+	relayP2PServer := createP2PRelayServer(logger, ethClient, p2pNode, config)
+
+	relayP2PServer.ConnectToPeer(p2pTarget)
 
 	// Create and register relay service server.
 	pb_relay.RegisterP2PRelayServiceServer(grpcServer, relayP2PServer)
@@ -252,10 +255,10 @@ func createRelayServer(logger *zap.Logger, ethClient *ethclient.Client, p2pClien
 	return server
 }
 
-func createP2PRelayServer(logger *zap.Logger, ethClient *ethclient.Client, nodep2p host.Host, config *relayp2p.P2PRelayServerConfig) *p2PRelayServer {
+func createP2PRelayServer(logger *zap.Logger, ethClient *ethclient.Client, p2pNode *nodep2p.Node, config *relayp2p.P2PRelayServerConfig) *p2PRelayServer {
 	server := &p2PRelayServer{
 		ethClient: ethClient,
-		nodep2p:   nodep2p,
+		p2pNode:   p2pNode,
 		config:    config,
 		logger:    logger,
 	}

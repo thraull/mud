@@ -70,14 +70,14 @@ func main() {
 			p2pClient = grpc.NewP2PRelayClientRemote(*p2pAddress, logger)
 		} else {
 			// Run and connect to an internal p2p relay node
-			nodep2p := nodep2p.NewP2PNode(*p2pPort, *p2pSeed)
+			p2pNode := nodep2p.NewP2PNode(*p2pPort, *p2pSeed)
 			p2pConfig := &relayp2p.P2PRelayServerConfig{
 				MessageDriftTime:       *messsageDriftTime,
 				MinAccountBalance:      *minAccountBalance,
 				VerifyMessageSignature: *verifyMessageSignature,
 				VerifyAccountBalance:   *verifyAccountBalance,
 			}
-			p2pClient = grpc.NewP2PRelayClientDirect(p2pConfig, ethClient, nodep2p, logger)
+			p2pClient = grpc.NewP2PRelayClientDirect(p2pConfig, ethClient, p2pNode, logger)
 		}
 	}
 

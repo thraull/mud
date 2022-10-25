@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 
+	maddr "github.com/multiformats/go-multiaddr"
+
 	"latticexyz/mud/packages/services/pkg/eth"
 	"latticexyz/mud/packages/services/pkg/grpc"
 	"latticexyz/mud/packages/services/pkg/logger"
@@ -22,6 +24,7 @@ var (
 	metricsPort            = flag.Int("metrics-port", 6060, "Prometheus metrics http handler port. Defaults to port 6060")
 	p2pPort                = flag.Int("p2p-port", 35071, "P2P Node Port")
 	p2pSeed                = flag.Int64("p2p-seed", 0, "P2P Node Private Key Seed")
+	p2pTargetAddr          = flag.String("p2p-target-addr", "", "Address of the p2p node to target.")
 	// idleDisconnectInterval
 )
 
@@ -49,8 +52,14 @@ func main() {
 	}
 
 	// Get an instance of p2p node
-	nodep2p := nodep2p.NewP2PNode(*p2pPort, *p2pSeed)
+	p2pNode := nodep2p.NewP2PNode(*p2pPort, *p2pSeed)
+
+	var p2pTarget maddr.Multiaddr
+	if len(*p2pTargetAddr) > 0 {
+		// TODO: handle error
+		p2pTarget, _ = maddr.NewMultiaddr(*p2pTargetAddr)
+	}
 
 	// Start gRPC server and the p2p node (unimplemented).
-	grpc.StartP2PRelayServer(*grpcPort, *metricsPort, ethClient, nodep2p, config, logger)
+	grpc.StartP2PRelayServer(*grpcPort, *metricsPort, ethClient, p2pNode, p2pTarget, config, logger)
 }

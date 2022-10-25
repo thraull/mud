@@ -12,10 +12,11 @@ import (
 	pb "latticexyz/mud/packages/services/protobuf/go/ecs-relay"
 	"time"
 
+	maddr "github.com/multiformats/go-multiaddr"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	libp2p_peer "github.com/libp2p/go-libp2p/core/peer"
 	"go.uber.org/zap"
@@ -31,7 +32,7 @@ type p2PRelayServer struct {
 	relayp2p.Client
 
 	ethClient     *ethclient.Client
-	nodep2p       host.Host
+	p2pNode       *nodep2p.Node
 	config        *relayp2p.P2PRelayServerConfig
 	knownMessages *utils.KnownCache
 	logger        *zap.Logger
@@ -42,7 +43,14 @@ func (server *p2PRelayServer) Init() {
 	// Init the cache of known message hashes.
 	server.knownMessages = utils.NewKnownCache(1048576)
 	// Set up the stream handler.
-	server.nodep2p.SetStreamHandler("/relay/0.1.0", server.P2PStreamHandler)
+	server.p2pNode.SetStreamHandler("/relay/0.1.0", server.P2PStreamHandler)
+	// TODO: handle error
+	hostAddr, _ := server.p2pNode.GetAddress()
+	server.logger.Info("running p2p node", zap.String("address", hostAddr.String()))
+}
+
+func (server *p2PRelayServer) ConnectToPeer(target maddr.Multiaddr) {
+	server.p2pNode.OpenStream(target, server.P2PStreamHandler)
 }
 
 // Opened by relay clients to get data streamed back.

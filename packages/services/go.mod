@@ -13,6 +13,7 @@ require (
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/keith-turner/ecoji v1.0.0
 	github.com/libp2p/go-libp2p v0.23.2
+	github.com/multiformats/go-multiaddr v0.7.0
 	github.com/prometheus/client_golang v1.13.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b
@@ -83,7 +84,6 @@ require (
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-base32 v0.1.0 // indirect
 	github.com/multiformats/go-base36 v0.1.0 // indirect
-	github.com/multiformats/go-multiaddr v0.7.0 // indirect
 	github.com/multiformats/go-multiaddr-dns v0.3.1 // indirect
 	github.com/multiformats/go-multiaddr-fmt v0.1.0 // indirect
 	github.com/multiformats/go-multibase v0.1.1 // indirect
