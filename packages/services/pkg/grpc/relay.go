@@ -25,9 +25,8 @@ type ecsRelayServer struct {
 	config    *relay.RelayServerConfig
 	logger    *zap.Logger
 
-	p2pClient     pb.P2PRelayServiceClient
-	p2pRecvStream pb.P2PRelayService_OpenStreamClient
-	p2pSendStream pb.P2PRelayService_PushStreamClient
+	p2pClient  pb.P2PRelayServiceClient
+	p2pChannel chan *pb.PushRequest
 }
 
 func (server *ecsRelayServer) Init() {
@@ -48,6 +47,9 @@ func (server *ecsRelayServer) Init() {
 		if err != nil {
 			server.logger.Fatal("error opening read stream from p2p", zap.Error(err))
 		}
+		// TODO: context
+		// Kick off a worker to handle PushRequests from the p2p server.
+		go server.P2PRecvWorker(recvStream)
 
 		// Open p2p write stream.
 		ctx = context.Background()
@@ -55,12 +57,8 @@ func (server *ecsRelayServer) Init() {
 		if err != nil {
 			server.logger.Fatal("error opening write stream from p2p", zap.Error(err))
 		}
-
-		server.p2pRecvStream = recvStream
-		server.p2pSendStream = sendStream
-
-		// Kick off a worker to handle PushRequests from the p2p server.
-		go server.P2PRecvWorker()
+		// Kick off a worker to send PushRequests to the p2p server.
+		go server.P2PSendWorker(sendStream)
 	}
 }
 
@@ -92,19 +90,27 @@ func (server *ecsRelayServer) DisconnectIdleClientsWorker(ticker *time.Ticker, q
 	}
 }
 
-func (server *ecsRelayServer) P2PRecvWorker() {
+func (server *ecsRelayServer) P2PRecvWorker(stream pb.P2PRelayService_OpenStreamClient) error {
 	for {
-		request, err := server.p2pRecvStream.Recv()
+		request, err := stream.Recv()
 		if err != nil {
-			server.logger.Info("error receiving p2p push request", zap.Error(err))
-			continue
+			return fmt.Errorf("error receiving p2p push request: %s", err.Error())
 		}
 		err = server.HandleP2PPushRequest(request)
 		if err != nil {
-			// TODO: Why Info and not Error [?]
-			server.logger.Info("error handling p2p push request", zap.Error(err))
+			return fmt.Errorf("error handling p2p push request: %s", err.Error())
 		}
 	}
+}
+
+func (server *ecsRelayServer) P2PSendWorker(stream pb.P2PRelayService_PushStreamClient) error {
+	for relayedPushRequest := range server.p2pChannel {
+		err := stream.Send(relayedPushRequest)
+		if err != nil {
+			return fmt.Errorf("error handling p2p push request: %s", err.Error())
+		}
+	}
+	return nil
 }
 
 func (server *ecsRelayServer) Stop() {
@@ -410,9 +416,12 @@ func (server *ecsRelayServer) HandlePushRequest(request *pb.PushRequest) error {
 	client.Ping()
 
 	if server.config.UseP2P {
-		err := server.p2pSendStream.Send(request)
-		if err != nil {
-			server.logger.Info("error sending p2p push request", zap.Error(err))
+		// Non-blocking send request to channel so client -> relay -> clients communication
+		// is not limited by relay -> p2p node communication.
+		// TODO: add buffering
+		select {
+		case server.p2pChannel <- request:
+		default:
 		}
 	}
 
