@@ -46,21 +46,25 @@ func (node *Node) SetStreamHandler(pid protocol.ID, handler network.StreamHandle
 	node.host.SetStreamHandler(pid, handler)
 }
 
-func (node *Node) OpenStream(addr maddr.Multiaddr, handler network.StreamHandler) error {
+func (node *Node) OpenStream(addr maddr.Multiaddr, pid protocol.ID, handler network.StreamHandler) error {
 	peerInfo, err := peer.AddrInfoFromP2pAddr(addr)
 	if err != nil {
-		// TODO: add context
 		return err
 	}
 	node.host.Peerstore().AddAddrs(peerInfo.ID, peerInfo.Addrs, peerstore.PermanentAddrTTL)
-	stream, err := node.host.NewStream(context.Background(), peerInfo.ID, "/echo/1.0.0")
+	stream, err := node.host.NewStream(context.Background(), peerInfo.ID, pid)
+	if err != nil {
+		return err
+	}
 	go handler(stream)
 	return nil
 }
 
 func (node *Node) GetAddress() (maddr.Multiaddr, error) {
-	// TODO: handle error
-	hostAddr, _ := maddr.NewMultiaddr(fmt.Sprintf("/p2p/%s", node.host.ID().Pretty()))
+	hostAddr, err := maddr.NewMultiaddr(fmt.Sprintf("/p2p/%s", node.host.ID().Pretty()))
+	if err != nil {
+		return nil, err
+	}
 	addr := node.host.Addrs()[0]
 	return addr.Encapsulate(hostAddr), nil
 }

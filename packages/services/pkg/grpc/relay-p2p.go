@@ -24,6 +24,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+const (
+	p2pProtocolId = "/relay/0.1.0"
+)
+
 type p2PRelayServer struct {
 	pb.UnimplementedP2PRelayServiceServer
 	relayp2p.SignerRegistry
@@ -43,14 +47,16 @@ func (server *p2PRelayServer) Init() {
 	// Init the cache of known message hashes.
 	server.knownMessages = utils.NewKnownCache(1048576)
 	// Set up the stream handler.
-	server.p2pNode.SetStreamHandler("/relay/0.1.0", server.P2PStreamHandler)
-	// TODO: handle error
-	hostAddr, _ := server.p2pNode.GetAddress()
+	server.p2pNode.SetStreamHandler(p2pProtocolId, server.P2PStreamHandler)
+	hostAddr, err := server.p2pNode.GetAddress()
+	if err != nil {
+		server.logger.Fatal("error getting p2p address", zap.Error(err))
+	}
 	server.logger.Info("running p2p node", zap.String("address", hostAddr.String()))
 }
 
-func (server *p2PRelayServer) ConnectToPeer(target maddr.Multiaddr) {
-	server.p2pNode.OpenStream(target, server.P2PStreamHandler)
+func (server *p2PRelayServer) ConnectToPeer(target maddr.Multiaddr) error {
+	return server.p2pNode.OpenStream(target, p2pProtocolId, server.P2PStreamHandler)
 }
 
 // Opened by relay clients to get data streamed back.

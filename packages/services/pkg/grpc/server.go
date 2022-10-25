@@ -189,7 +189,10 @@ func StartP2PRelayServer(grpcPort int, metricsPort int, ethClient *ethclient.Cli
 
 	relayP2PServer := createP2PRelayServer(logger, ethClient, p2pNode, config)
 
-	relayP2PServer.ConnectToPeer(p2pTarget)
+	err := relayP2PServer.ConnectToPeer(p2pTarget)
+	if err != nil {
+		logger.Fatal("error connecting to target peer", zap.Error(err))
+	}
 
 	// Create and register relay service server.
 	pb_relay.RegisterP2PRelayServiceServer(grpcServer, relayP2PServer)
