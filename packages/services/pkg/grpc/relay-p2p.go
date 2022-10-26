@@ -176,6 +176,7 @@ func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
 	return fmt.Errorf("error handling peer stream")
 }
 
+// TODO: rename prw
 func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStreamReader) error {
 	server.logger.Info("worker started reading data from peer stream")
 	defer server.logger.Info("worker stopped reading data from peer stream")

@@ -1,12 +1,12 @@
 package nodep2p
 
 import (
-	"bufio"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
 	"math"
+	"time"
 
 	"github.com/libp2p/go-libp2p/core/network"
 )
@@ -14,15 +14,15 @@ import (
 // TODO: rename this to be more specific
 
 func NewReader(stream network.Stream) *ProtoStreamReader {
-	return &ProtoStreamReader{Reader: bufio.NewReader(stream)}
+	return &ProtoStreamReader{Reader: stream}
 }
 
 func NewWriter(stream network.Stream) *ProtoStreamWriter {
-	return &ProtoStreamWriter{Writer: bufio.NewWriter(stream)}
+	return &ProtoStreamWriter{Writer: stream}
 }
 
 type ProtoStreamReader struct {
-	Reader *bufio.Reader
+	Reader io.Reader
 }
 
 func (stream *ProtoStreamReader) Read() ([]byte, error) {
@@ -33,7 +33,7 @@ func (stream *ProtoStreamReader) Read() ([]byte, error) {
 		return nil, err
 	}
 	size := binary.BigEndian.Uint16(sizeBytes)
-	fmt.Println("[stream.go] read message size", size)
+	fmt.Println("[stream.go] read message size", size, time.Now().Second())
 	// Get the message
 	data := make([]byte, size)
 	_, err = io.ReadFull(stream.Reader, data)
@@ -45,7 +45,7 @@ func (stream *ProtoStreamReader) Read() ([]byte, error) {
 }
 
 type ProtoStreamWriter struct {
-	Writer *bufio.Writer
+	Writer io.Writer
 }
 
 func (stream *ProtoStreamWriter) Write(data []byte) error {
@@ -57,9 +57,11 @@ func (stream *ProtoStreamWriter) Write(data []byte) error {
 	sizeBytes := make([]byte, 2)
 	binary.BigEndian.PutUint16(sizeBytes, uint16(size))
 	// Write data size and data to buffer
+	fmt.Println("[stream.go] write message size", size, time.Now().Second())
 	_, err := stream.Writer.Write(append(sizeBytes, data...))
 	if err != nil {
 		return err
 	}
+	fmt.Println("[stream.go] wrote message", size)
 	return nil
 }
