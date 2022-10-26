@@ -89,7 +89,7 @@ func (registry *SignerRegistry) GetSignerFromIdentity(identity *pb.Identity) (*S
 	return nil, false
 }
 
-func (registry *SignerRegistry) Register(identity *pb.Identity, config *P2PRelayServerConfig) {
+func (registry *SignerRegistry) AddSigner(identity *pb.Identity, config *P2PRelayServerConfig) *Signer {
 	registry.mutex.Lock()
 
 	newSigner := new(Signer)
@@ -102,9 +102,10 @@ func (registry *SignerRegistry) Register(identity *pb.Identity, config *P2PRelay
 
 	registry.signers = append(registry.signers, newSigner)
 	registry.mutex.Unlock()
+	return newSigner
 }
 
-func (registry *SignerRegistry) Unregister(identity *pb.Identity) error {
+func (registry *SignerRegistry) RemoveSigner(identity *pb.Identity) error {
 	registry.mutex.Lock()
 	for index, signer := range registry.signers {
 		if signer.identity.Name == identity.Name {
