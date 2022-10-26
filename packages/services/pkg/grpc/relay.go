@@ -99,6 +99,7 @@ func (server *ecsRelayServer) P2PRecvWorker(stream pb.P2PRelayService_OpenStream
 			return fmt.Errorf("error receiving p2p push request: %s", err.Error())
 		}
 		err = server.HandleP2PPushRequest(request)
+		server.logger.Info("worker handled p2p push request from p2p node")
 		if err != nil {
 			return fmt.Errorf("error handling p2p push request: %s", err.Error())
 		}
