@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -162,35 +161,37 @@ func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
 	defer server.PeerRegistry.RemovePeer(peerId)
 	server.logger.Info("received new p2p stream", zap.String("peerId", peerId.ShortString()))
 
-	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-	prw := &nodep2p.ProtoStream{RW: rw}
-
 	// Start I/O workers.
 	ctx, cancel := context.WithCancel(context.Background())
-	go server.PeerRecvWorker(cancel, ctx, peer, prw)
-	go server.PeerSendWorker(cancel, ctx, peer, prw)
+	reader := nodep2p.NewReader(stream)
+	writer := nodep2p.NewWriter(stream)
+	go server.PeerRecvWorker(cancel, ctx, peer, reader)
+	go server.PeerSendWorker(cancel, ctx, peer, writer)
 
 	// Wait for I/O to be over.
 	<-ctx.Done()
 
-	// I/O is only closed by an error so the function always returns a generic error and
-	// logs the specific one from the worker.
+	// I/O is only closed by an error in either read or write so the function always returns
+	// a generic error and logs the specific one from the worker.
 	return fmt.Errorf("error handling peer stream")
 }
 
-func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
+func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStreamReader) error {
+	server.logger.Info("worker started reading data from peer stream")
+	defer server.logger.Info("worker stopped reading data from peer stream")
 	defer cancel()
-	server.logger.Info("worker receiving data from peer")
 	for {
 		select {
 		case <-ctx.Done():
+			return nil
 		default:
 		}
 		data, err := prw.Read()
 		if err != nil {
-			server.logger.Info("error reading peer stream", zap.Error(err))
+			server.logger.Info("error reading data from peer stream", zap.Error(err))
 			return err
 		}
+		// server.logger.Info("worker read data from peer stream")
 		request := &pb.PushRequest{}
 		err = proto.Unmarshal(data, request)
 		if err != nil {
@@ -205,13 +206,15 @@ func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx cont
 	}
 }
 
-func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
+func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStreamWriter) error {
 	propagatedRequestsChannel := peer.GetChannel()
+	server.logger.Info("worker started writing data to peer stream")
+	defer server.logger.Info("worker stopped writing data to peer stream")
 	defer cancel()
-	server.logger.Info("worker sending data to peer")
 	for {
 		select {
 		case <-ctx.Done():
+			return nil
 		case request := <-propagatedRequestsChannel:
 			data, err := proto.Marshal(request)
 			if err != nil {
@@ -220,24 +223,31 @@ func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx cont
 			}
 			err = prw.Write(data)
 			if err != nil {
-				server.logger.Info("error reading to peer stream", zap.Error(err))
+				server.logger.Info("error writing data to peer stream", zap.Error(err))
 				return err
 			}
+			// server.logger.Info("worker wrote data to peer stream")
 		}
 	}
 }
 
 func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest, peer *relayp2p.Peer) error {
+	// server.logger.Info("handling peer push request")
 	shouldPropagate, err := server.ShouldPropagate(request)
 	if !shouldPropagate || err != nil {
+		// server.logger.Info("not propagating peer push request")
 		return err
 	}
 	// Propagate to the client(s).
 	if server.Client.IsReceiving() {
+		// server.logger.Info("propagating peer push request to client")
 		server.Client.Propagate(request, "")
+		// server.logger.Info("propagated peer push request to client")
 	}
 	// Propagate to peers.
+	// server.logger.Info("propagating peer push request to peer")
 	server.PeerRegistry.Propagate(request, peer.GetId())
+	// server.logger.Info("propagated peer push request to peer")
 	return nil
 }
 
