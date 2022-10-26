@@ -30,6 +30,7 @@ type ecsRelayServer struct {
 }
 
 func (server *ecsRelayServer) Init() {
+	server.p2pChannel = make(chan *pb.PushRequest)
 	server.SubscriptionRegistry.Init()
 
 	// Kick off a worker that will periodically cycle through the connected clients and disconnect
@@ -91,6 +92,7 @@ func (server *ecsRelayServer) DisconnectIdleClientsWorker(ticker *time.Ticker, q
 }
 
 func (server *ecsRelayServer) P2PRecvWorker(stream pb.P2PRelayService_OpenStreamClient) error {
+	server.logger.Info("relay receiving from p2p node")
 	for {
 		request, err := stream.Recv()
 		if err != nil {
@@ -104,6 +106,7 @@ func (server *ecsRelayServer) P2PRecvWorker(stream pb.P2PRelayService_OpenStream
 }
 
 func (server *ecsRelayServer) P2PSendWorker(stream pb.P2PRelayService_PushStreamClient) error {
+	server.logger.Info("relay sending to p2p node")
 	for relayedPushRequest := range server.p2pChannel {
 		err := stream.Send(relayedPushRequest)
 		if err != nil {
@@ -419,6 +422,7 @@ func (server *ecsRelayServer) HandlePushRequest(request *pb.PushRequest) error {
 		// Non-blocking send request to channel so client -> relay -> clients communication
 		// is not limited by relay -> p2p node communication.
 		// TODO: add buffering
+		server.logger.Info("server.p2pChannel <- request")
 		select {
 		case server.p2pChannel <- request:
 		default:

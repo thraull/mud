@@ -38,8 +38,8 @@ type p2PRelayServer struct {
 	ethClient     *ethclient.Client
 	p2pNode       *nodep2p.Node
 	config        *relayp2p.P2PRelayServerConfig
-	knownMessages *utils.KnownCache
 	logger        *zap.Logger
+	knownMessages *utils.KnownCache
 }
 
 func (server *p2PRelayServer) Init() {
@@ -180,6 +180,7 @@ func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
 
 func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
 	defer cancel()
+	server.logger.Info("worker receiving data from peer")
 	for {
 		select {
 		case <-ctx.Done():
@@ -207,6 +208,7 @@ func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx cont
 func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStream) error {
 	propagatedRequestsChannel := peer.GetChannel()
 	defer cancel()
+	server.logger.Info("worker sending data to peer")
 	for {
 		select {
 		case <-ctx.Done():
@@ -231,7 +233,9 @@ func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest, pee
 		return err
 	}
 	// Propagate to the client(s).
-	server.Client.Propagate(request, "")
+	if server.Client.IsReceiving() {
+		server.Client.Propagate(request, "")
+	}
 	// Propagate to peers.
 	server.PeerRegistry.Propagate(request, peer.GetId())
 	return nil
@@ -266,7 +270,7 @@ func (server *p2PRelayServer) ShouldPropagate(request *pb.PushRequest) (bool, er
 	// Get the signer object for this identity to make sure it's authenticated.
 	signer, exists := server.SignerRegistry.GetSignerFromIdentity(identity)
 	if !exists {
-		server.SignerRegistry.Register(identity, server.config)
+		signer = server.SignerRegistry.AddSigner(identity, server.config)
 	}
 
 	// Check if the signer has a balance. We only propagate messages from signers which
@@ -308,10 +312,12 @@ func (server *p2PRelayServer) HashMessage(message *pb.Message) []byte {
 }
 
 func (server *p2PRelayServer) IsKnownMessage(msgHash []byte) bool {
-	return server.knownMessages.Contains(msgHash)
+	return false
+	// return server.knownMessages.Contains(msgHash)
 }
 
 func (server *p2PRelayServer) MarkMessage(msgHash []byte) {
+	return
 	server.knownMessages.Add(msgHash)
 }
 
