@@ -19,7 +19,7 @@ func (stream *ProtoStream) Read() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	size := binary.BigEndian.Uint64(sizeBytes)
+	size := binary.BigEndian.Uint16(sizeBytes)
 	// Get the message
 	data := make([]byte, size)
 	_, err = io.ReadFull(stream.RW, data)
@@ -36,7 +36,7 @@ func (stream *ProtoStream) Write(data []byte) error {
 	}
 	// Encode data size in bytes
 	sizeBytes := make([]byte, 2)
-	binary.BigEndian.PutUint64(sizeBytes, uint64(size))
+	binary.BigEndian.PutUint16(sizeBytes, uint16(size))
 	// Write data size and data to buffer
 	_, err := stream.RW.Write(append(sizeBytes, data...))
 	if err != nil {
