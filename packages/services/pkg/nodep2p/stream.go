@@ -1,6 +1,7 @@
 package nodep2p
 
 import (
+	"bufio"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -14,10 +15,11 @@ import (
 // TODO: rename this to be more specific
 
 func NewReader(stream network.Stream) *ProtoStreamReader {
-	return &ProtoStreamReader{Reader: stream}
+	return &ProtoStreamReader{Reader: bufio.NewReader(stream)}
 }
 
 func NewWriter(stream network.Stream) *ProtoStreamWriter {
+	// TODO: issue: stream blocks when writes are buffered
 	return &ProtoStreamWriter{Writer: stream}
 }
 

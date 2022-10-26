@@ -176,8 +176,7 @@ func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
 	return fmt.Errorf("error handling peer stream")
 }
 
-// TODO: rename prw
-func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStreamReader) error {
+func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, reader *nodep2p.ProtoStreamReader) error {
 	server.logger.Info("worker started reading data from peer stream")
 	defer server.logger.Info("worker stopped reading data from peer stream")
 	defer cancel()
@@ -187,7 +186,7 @@ func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx cont
 			return nil
 		default:
 		}
-		data, err := prw.Read()
+		data, err := reader.Read()
 		if err != nil {
 			server.logger.Info("error reading data from peer stream", zap.Error(err))
 			return err
@@ -207,7 +206,7 @@ func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx cont
 	}
 }
 
-func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, prw *nodep2p.ProtoStreamWriter) error {
+func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, writer *nodep2p.ProtoStreamWriter) error {
 	propagatedRequestsChannel := peer.GetChannel()
 	server.logger.Info("worker started writing data to peer stream")
 	defer server.logger.Info("worker stopped writing data to peer stream")
@@ -222,7 +221,7 @@ func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx cont
 				server.logger.Info("error marshaling peer push request", zap.Error(err))
 				return err
 			}
-			err = prw.Write(data)
+			err = writer.Write(data)
 			if err != nil {
 				server.logger.Info("error writing data to peer stream", zap.Error(err))
 				return err
