@@ -32,7 +32,7 @@ type p2PRelayServer struct {
 	relayp2p.SignerRegistry
 	relayp2p.PeerRegistry
 	// Support a single relay client
-	relayp2p.Client
+	*relayp2p.Client
 
 	ethClient     *ethclient.Client
 	p2pNode       *nodep2p.Node
@@ -45,6 +45,7 @@ func (server *p2PRelayServer) Init() {
 	// TODO: do the math on cache size (and vs. BloomFilter).
 	// Init the cache of known message hashes.
 	server.knownMessages = utils.NewKnownCache(1048576)
+	server.Client = relayp2p.NewClient(server.config)
 	// Set up the stream handler.
 	server.p2pNode.SetStreamHandler(p2pProtocolId, server.P2PStreamHandler)
 	hostAddr, err := server.p2pNode.GetAddress()
