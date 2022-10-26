@@ -50,9 +50,9 @@ func (server *p2PRelayServer) Init() {
 	server.p2pNode.SetStreamHandler(p2pProtocolId, server.P2PStreamHandler)
 	hostAddr, err := server.p2pNode.GetAddress()
 	if err != nil {
-		server.logger.Fatal("error getting p2p address", zap.Error(err))
+		server.logger.Fatal("failed to start p2p relay: error getting node's address", zap.Error(err))
 	}
-	server.logger.Info("running p2p node", zap.String("address", hostAddr.String()))
+	server.logger.Info("started p2p relay server", zap.String("address", hostAddr.String()))
 }
 
 func (server *p2PRelayServer) ConnectToPeer(target maddr.Multiaddr) error {
@@ -178,8 +178,8 @@ func (server *p2PRelayServer) HandlePeerStream(stream network.Stream) error {
 }
 
 func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, reader *nodep2p.ProtoStreamReader) error {
-	server.logger.Info("worker started reading data from peer stream")
-	defer server.logger.Info("worker stopped reading data from peer stream")
+	server.logger.Info("p2p worker started reading data from peer stream")
+	defer server.logger.Info("p2p worker stopped reading data from peer stream")
 	defer cancel()
 	for {
 		select {
@@ -192,7 +192,6 @@ func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx cont
 			server.logger.Info("error reading data from peer stream", zap.Error(err))
 			return err
 		}
-		// server.logger.Info("worker read data from peer stream")
 		request := &pb.PushRequest{}
 		err = proto.Unmarshal(data, request)
 		if err != nil {
@@ -209,8 +208,8 @@ func (server *p2PRelayServer) PeerRecvWorker(cancel context.CancelFunc, ctx cont
 
 func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx context.Context, peer *relayp2p.Peer, writer *nodep2p.ProtoStreamWriter) error {
 	propagatedRequestsChannel := peer.GetChannel()
-	server.logger.Info("worker started writing data to peer stream")
-	defer server.logger.Info("worker stopped writing data to peer stream")
+	server.logger.Info("p2p worker started writing data to peer stream")
+	defer server.logger.Info("p2p worker stopped writing data to peer stream")
 	defer cancel()
 	for {
 		select {
@@ -227,28 +226,21 @@ func (server *p2PRelayServer) PeerSendWorker(cancel context.CancelFunc, ctx cont
 				server.logger.Info("error writing data to peer stream", zap.Error(err))
 				return err
 			}
-			// server.logger.Info("worker wrote data to peer stream")
 		}
 	}
 }
 
 func (server *p2PRelayServer) HandlePeerPushRequest(request *pb.PushRequest, peer *relayp2p.Peer) error {
-	// server.logger.Info("handling peer push request")
 	shouldPropagate, err := server.ShouldPropagate(request)
 	if !shouldPropagate || err != nil {
-		// server.logger.Info("not propagating peer push request")
 		return err
 	}
 	// Propagate to the client(s).
 	if server.Client.IsReceiving() {
-		// server.logger.Info("propagating peer push request to client")
 		server.Client.Propagate(request, "")
-		// server.logger.Info("propagated peer push request to client")
 	}
 	// Propagate to peers.
-	// server.logger.Info("propagating peer push request to peer")
 	server.PeerRegistry.Propagate(request, peer.GetId())
-	// server.logger.Info("propagated peer push request to peer")
 	return nil
 }
 
