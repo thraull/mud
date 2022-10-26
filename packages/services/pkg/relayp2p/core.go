@@ -35,8 +35,8 @@ type Signer struct {
 
 func (signer *Signer) Ping() {
 	signer.mutex.Lock()
+	defer signer.mutex.Unlock()
 	signer.latestPingTimestamp = time.Now().Unix()
-	signer.mutex.Unlock()
 }
 
 func (signer *Signer) IsIdle(idleTimeoutTime int) bool {
@@ -79,18 +79,18 @@ func (registry *SignerRegistry) Count() int {
 
 func (registry *SignerRegistry) GetSignerFromIdentity(identity *pb.Identity) (*Signer, bool) {
 	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
 	for _, signer := range registry.signers {
 		if signer.identity.Name == identity.Name {
-			registry.mutex.Unlock()
 			return signer, true
 		}
 	}
-	registry.mutex.Unlock()
 	return nil, false
 }
 
 func (registry *SignerRegistry) AddSigner(identity *pb.Identity, config *P2PRelayServerConfig) *Signer {
 	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
 
 	newSigner := new(Signer)
 	newSigner.identity = identity
@@ -101,20 +101,18 @@ func (registry *SignerRegistry) AddSigner(identity *pb.Identity, config *P2PRela
 	newSigner.sufficientBalance = false
 
 	registry.signers = append(registry.signers, newSigner)
-	registry.mutex.Unlock()
 	return newSigner
 }
 
 func (registry *SignerRegistry) RemoveSigner(identity *pb.Identity) error {
 	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
 	for index, signer := range registry.signers {
 		if signer.identity.Name == identity.Name {
 			registry.signers = append(registry.signers[:index], registry.signers[index+1:]...)
-			registry.mutex.Unlock()
 			return nil
 		}
 	}
-	registry.mutex.Unlock()
 	return fmt.Errorf("signer identity.Name=%s not registered", identity.Name)
 }
 
@@ -150,48 +148,48 @@ func (client *Client) IsSending() bool {
 
 func (client *Client) ConnectOpenStream() error {
 	client.mutex.Lock()
+	defer client.mutex.Unlock()
 	if client.IsReceiving() {
 		return fmt.Errorf("open stream already connected")
 	}
 	client.receiving = true
-	client.mutex.Unlock()
 	return nil
 }
 
 func (client *Client) DisconnectOpenStream() error {
 	client.mutex.Lock()
+	defer client.mutex.Unlock()
 	if !client.IsReceiving() {
 		return fmt.Errorf("open stream not connected")
 	}
 	client.receiving = false
-	client.mutex.Unlock()
 	return nil
 }
 
 func (client *Client) ConnectPushStream() error {
 	client.mutex.Lock()
+	defer client.mutex.Unlock()
 	if client.IsSending() {
 		return fmt.Errorf("push stream already connected")
 	}
 	client.sending = true
-	client.mutex.Unlock()
 	return nil
 }
 
 func (client *Client) DisconnectPushStream() error {
 	client.mutex.Lock()
+	defer client.mutex.Unlock()
 	if !client.IsSending() {
 		return fmt.Errorf("push stream not connected")
 	}
 	client.sending = false
-	client.mutex.Unlock()
 	return nil
 }
 
 func (client *Client) Propagate(request *pb.PushRequest, origin string) {
 	client.mutex.Lock()
+	defer client.mutex.Unlock()
 	client.channel <- request
-	client.mutex.Unlock()
 }
 
 type Peer struct {
@@ -224,41 +222,40 @@ func (registry *PeerRegistry) GetPeers() []*Peer {
 
 func (registry *PeerRegistry) GetPeerFromId(id libp2p_peer.ID) (*Peer, bool) {
 	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
 	for _, peer := range registry.peers {
 		if peer.id == id {
-			registry.mutex.Unlock()
 			return peer, true
 		}
 	}
-	registry.mutex.Unlock()
 	return nil, false
 }
 
 func (registry *PeerRegistry) AddPeer(id libp2p_peer.ID, config *P2PRelayServerConfig) *Peer {
 	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
 	newPeer := new(Peer)
 	newPeer.id = id
 	newPeer.channel = make(chan *pb.PushRequest)
 	registry.peers = append(registry.peers, newPeer)
-	registry.mutex.Unlock()
 	return newPeer
 }
 
 func (registry *PeerRegistry) RemovePeer(id libp2p_peer.ID) error {
 	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
 	for index, peer := range registry.peers {
 		if peer.id == id {
 			registry.peers = append(registry.peers[:index], registry.peers[index+1:]...)
-			registry.mutex.Unlock()
 			return nil
 		}
 	}
-	registry.mutex.Unlock()
 	return fmt.Errorf("peer id=%s not registered", id.ShortString())
 }
 
 func (registry *PeerRegistry) Propagate(request *pb.PushRequest, origin libp2p_peer.ID) {
 	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
 	for _, peer := range registry.peers {
 		// Only pipe to peers that are connected and not the peer which is the origin of
 		// the request.
@@ -268,5 +265,4 @@ func (registry *PeerRegistry) Propagate(request *pb.PushRequest, origin libp2p_p
 		}
 		peer.mutex.Unlock()
 	}
-	registry.mutex.Unlock()
 }
