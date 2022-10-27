@@ -27,11 +27,11 @@ var (
 	messageRateLimit       = flag.Int("msg-rate-limit", 10, "Rate limit for messages per second that a single client can push to be relayed. Defaults to 10")
 	metricsPort            = flag.Int("metrics-port", 6060, "Prometheus metrics http handler port. Defaults to port 6060")
 	useP2P                 = flag.Bool("use-p2p", false, "Whether to connect to the relay p2p network. Defaults to false.")
-	externalP2PNode        = flag.Bool("external-p2p-node", false, "Whether to connect to an external p2p node instead of running one internally. Defaults to false.")
-	p2pAddress             = flag.String("p2p-address", "http://localhost:35000", "Address of the relay p2p server to connect to. Defaults to false.")
 	verifyP2PMessages      = flag.Bool("verify-p2p-msg", true, "Whether to verify messages received from the p2p node. Defaults to true.")
 	p2pPort                = flag.Int("p2p-port", 35071, "P2P Node Port")
 	p2pSeed                = flag.Int64("p2p-seed", 0, "P2P Node Private Key Seed")
+	externalP2PNode        = flag.Bool("external-p2p-node", false, "Whether to connect to an external p2p node instead of running one internally. Defaults to false.")
+	p2pAddress             = flag.String("p2p-address", "http://localhost:35000", "Address of the relay p2p server to connect to. Defaults to false.")
 )
 
 func main() {
